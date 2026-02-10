@@ -1,0 +1,359 @@
+
+
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+   background-color: rgb(255, 255, 255);
+}
+
+.profile-container {
+  max-width: 900px;
+  margin: auto;
+  padding: 30px 20px;
+}
+
+.profile-header {
+  display: flex;
+  gap: 40px;
+  align-items: flex-start;
+  margin-bottom: 30px;
+}
+
+/* PROFILE PIC */
+.profile-pic {
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  border: 3px solid rgb(253, 252, 250);
+  object-fit: cover;
+}
+
+/* RIGHT COLUMN */
+.profile-info {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* ROW 1 — STATS */
+.stats-row {
+  display: flex;
+  gap: 30px;
+  font-size: 14px;
+  text-align: center;
+}
+
+.stats-row span b {
+  font-size: 16px;
+}
+
+/* ROW 2 — BIO */
+.bio-row {
+  font-size: 14px;
+  color: #262626;
+  max-width: 500px;
+}
+
+/* ROW 3 — BUTTONS */
+.action-row {
+  display: flex;
+  gap: 10px;
+}
+
+.edit-btn,
+.share-btn {
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.edit-btn {
+  border: 1px solid #dbdbdb;
+  background: #bfd4e7;
+  text-decoration: none;
+  color: #000;
+}
+
+.share-btn {
+  border: 1px solid #dbdbdb;
+  background: #7eb1ff;
+}
+/* USERNAME */
+.username-row h2 {
+  font-size: 22px;
+  font-weight: 500;
+  margin: 0;
+  margin-left: 180px;
+  margin-bottom: 14px;
+}
+
+
+
+
+
+.username-row {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+
+
+.profile-grid {
+  /*display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;*/
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;                 /* Instagram-like spacing */
+          /* grid line color */
+  padding: 6px; 
+  max-width: 935px;         /* Instagram width */
+  margin: 30px auto;        /* Center grid */
+  padding: 0 20px;
+  /*border: 3px solid rgb(255, 255, 255);*/
+   grid-auto-rows: 1fr;                  /* equal row height */
+  
+  
+}
+.grid-item img {
+  
+  width: 100%;
+  aspect-ratio: 1 / 1;      /* Makes square posts */
+  overflow: hidden;
+  cursor: pointer;
+  background: #fafafa;
+   height: 100%;
+  object-fit: cover;        /* Crops nicely */
+  display: block;
+  top: 0;
+  left: 0;
+   background: white; 
+  
+}
+.grid-item img:hover {
+  filter: brightness(90%);
+  transition: filter 0.3s;
+}
+
+
+/* POST MODAL */
+.post-modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(246, 246, 246, 0.7);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+
+.post-modal-content {
+  background: white;
+  border-radius: 12px;
+  width: 850px;            /* 🔥 IMPORTANT */
+  max-width: 95%;
+  height: 520px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+
+.post-modal-content img {
+  width: 100%;
+  max-height: 400px;
+  object-fit: contain;
+  border-radius: 8px;
+}
+
+.post-modal-content p {
+  margin-top: 10px;
+  color: #333;
+}
+
+.close-btn {
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  cursor: pointer;
+  font-size: 18px;
+  z-index: 1000;
+}
+
+.modal-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 10px 0;
+  font-size: 18px;
+}
+
+#likeBtn {
+  cursor: pointer;
+}
+
+.comments-section {
+  margin-top: 15px;
+  text-align: left;
+}
+
+#commentsList div {
+  margin-bottom: 6px;
+  font-size: 14px;
+}
+
+.add-comment {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+
+
+
+.modal-body {
+  display: flex;
+  gap: 15px;
+}
+
+.modal-left {
+  width: 350px;
+}
+
+.modal-left img {
+  width: 100%;
+  border-radius: 8px;
+}
+
+
+.modal-icons {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 20px;
+  margin: 8px 0;
+}
+
+
+.modal-icons span {
+  cursor: pointer;
+}
+
+.modal-right {
+  width: 300px;
+  border-left: 1px solid #ddd;
+  padding-left: 12px;
+  display: none; /* 🔥 hidden by default */
+}
+
+.modal-right h4 {
+  margin-top: 0;
+}
+
+#commentsList div {
+  margin-bottom: 6px;
+  font-size: 14px;
+}
+
+.add-comment {
+  display: flex;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.comment-pic {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.add-comment input {
+  flex: 1;
+  padding: 6px;
+}
+
+.post-caption {
+  margin-top: 6px;
+  text-align: left;
+  font-size: 14px;
+  color: #333;
+}
+
+.post-caption b {
+  margin-right: 6px; /* space between username and caption */
+}
+
+
+
+
+/* THREE DOT ICON 
+.menu-icon {
+  font-size: 22px;
+  cursor: pointer;
+  padding: 6px;
+  cursor: pointer; 
+}*/
+.menu-icon {
+  font-size: 22px;
+  cursor: pointer;        /* 👈 THIS */
+  user-select: none;
+  padding: 6px;
+  line-height: 1;
+}
+/* MENU CONTAINER */
+.post-menu {
+  position: relative;
+  margin-right: 12px;
+}
+
+/* DROPDOWN */
+.menu-dropdown {
+  display: none;
+  position: absolute;
+  top: 30px;
+  right: 0;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  overflow: hidden;
+  z-index: 10;
+  cursor: pointer; 
+}
+
+.menu-dropdown button {
+  background: none;
+  border: none;
+  padding: 10px 16px;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  font-size: 14px;
+  color: red;
+  
+}
+
+.menu-dropdown button:hover {
+  background: #f5f5f5;
+  cursor: pointer; 
+}
+
+
+
+
+
+
+
+
+
+
+
+

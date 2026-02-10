@@ -1,0 +1,238 @@
+body {
+    margin: 0;
+    font-family: 'Poppins', sans-serif;
+    background-color: #f5f7fa;
+    /*background: linear-gradient(45deg, #ff9a9e, #fad0c4, #fbc2eb, #a6c1ee);*/
+    min-height: 100vh;
+}
+
+/* HERO */
+.hero {
+    background: linear-gradient(135deg, #ff914d, #ff6700);
+    color: white;
+    padding: 80px 20px;
+    text-align: center;
+}
+
+.hero h1 {
+    font-size: 48px;
+    margin-bottom: 10px;
+}
+
+.hero p {
+    font-size: 18px;
+    margin-bottom: 30px;
+}
+
+.hero-buttons a {
+    text-decoration: none;
+    color: white;
+    background: #222;
+    padding: 12px 25px;
+    margin: 10px;
+    border-radius: 6px;
+    display: inline-block;
+}
+
+.hero-buttons a:hover {
+    background: #000;
+}
+
+/* FEATURES */
+.features {
+    display: flex;
+    justify-content: center;
+    gap: 25px;
+    padding: 60px 20px;
+}
+
+.card {
+    background: white;
+    padding: 25px;
+    width: 250px;
+    border-radius: 10px;
+    text-align: center;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.card h3 {
+    margin-bottom: 10px;
+    color: #ff6700;
+}
+.page-title {
+    text-align: center;
+    margin: 40px 0;
+    color: #333;
+}
+
+/* PET GRID */
+.pet-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 25px;
+    padding: 0 40px 60px;
+}
+
+.pet-card {
+    background: white;
+    border-radius: 12px;
+    padding: 15px;
+    text-align: center;
+    box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+}
+
+.pet-image {
+    height: 150px;
+    background: #eaeaea;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #777;
+    margin-bottom: 15px;
+}
+
+.pet-card button {
+    background: #ff6700;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.pet-card button:hover {
+    background: #e65c00;
+}
+.pet-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 10px;
+}
+.pet-form {
+    width: 350px;
+    margin: 30px auto;
+    background: white;
+    padding: 25px;
+    border-radius: 10px;
+    box-shadow: 0 5px 12px rgba(0,0,0,0.1);
+    display: flex;
+    flex-direction: column;
+}
+
+.pet-form input,
+.pet-form textarea {
+    margin-bottom: 15px;
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+}
+
+.pet-form button {
+    background: #ff6700;
+    color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.pet-form button:hover {
+    background: #e65c00;
+}
+
+/* Paw-Gram Page */
+.pawgram-body {
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(135deg, #ffe4e1, #fff6e5);
+    min-height: 100vh;
+}
+
+/* Header */
+.pawgram-header {
+    text-align: center;
+    padding: 25px;
+    background: #ffb6c1;
+    color: white;
+    border-radius: 0 0 25px 25px;
+}
+
+.pawgram-header h1 {
+    font-size: 2.5rem;
+}
+
+.pawgram-header p {
+    font-size: 1rem;
+    opacity: 0.9;
+}
+
+/* Feed Layout */
+.pawgram-feed {
+    max-width: 900px;
+    margin: 30px auto;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 25px;
+    padding: 10px;
+}
+
+/* Post Card */
+.paw-post {
+    background: white;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    transition: transform 0.3s;
+}
+
+.paw-post:hover {
+    transform: translateY(-8px);
+}
+
+.paw-post img {
+    width: 100%;
+    height: 260px;
+    object-fit: cover;
+}
+
+/* Post Content */
+.paw-post-content {
+    padding: 15px;
+}
+
+.paw-post-content h3 {
+    margin: 5px 0;
+}
+
+.paw-post-content p {
+    font-size: 0.9rem;
+    color: #555;
+}
+
+/* Like Button */
+.like-btn {
+    margin-top: 10px;
+    background: #ff69b4;
+    border: none;
+    color: white;
+    padding: 8px 14px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+.like-btn:hover {
+    background: #ff1493;
+}
+
+.tagline {
+  font-size: 20px;
+  color: #6b4f4f;
+  margin-top: 10px;
+  font-weight: 500;
+}
+h1 {
+  font-weight: 700;
+  letter-spacing: 1px;
+}

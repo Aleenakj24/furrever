@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Pet Match Result</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: "Segoe UI", Tahoma, sans-serif;
+            background: linear-gradient(135deg, #bdf5eb, #acb6e5);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .result-card {
+            background: white;
+            width: 420px;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+            animation: fadeIn 0.6s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .icon {
+            font-size: 60px;
+            margin-bottom: 10px;
+        }
+
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        p {
+            font-size: 18px;
+            color: #555;
+            margin: 15px 0;
+        }
+
+        .highlight {
+            background: #f1f8ff;
+            padding: 15px;
+            border-radius: 10px;
+            font-weight: bold;
+            color: #2980b9;
+            margin: 20px 0;
+        }
+
+        .buttons {
+            margin-top: 25px;
+        }
+
+        a {
+            text-decoration: none;
+            padding: 12px 22px;
+            border-radius: 8px;
+            margin: 5px;
+            display: inline-block;
+            font-weight: 600;
+        }
+
+        .home-btn {
+            background: #27ae60;
+            color: white;
+        }
+
+        .adopt-btn {
+            background: #3498db;
+            color: white;
+        }
+
+        a:hover {
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+
+<div class="result-card">
+    <div class="icon">🐾</div>
+    <h1>Your Perfect Pet Match</h1>
+
+    <p>Based on your lifestyle and preferences, we recommend:</p>
+
+    <!--div class="highlight">
+        {{ result }}
+    </div>-->
+    <div class="highlight">
+        {{ pet_type }}
+    </div>
+
+    {% if pets %}
+    <h3>Available {{ pet_type }}s for Adoption</h3>
+    <ul style="text-align:left;">
+        {% for pet in pets %}
+            <li>
+                <strong>{{ pet.name }}</strong> – {{ pet.age }} years – {{ pet.breed }}
+            </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+        <p>No {{ pet_type }}s available right now.</p>
+    {% endif %}
+
+
+    <p>This pet type suits your home environment and experience level.</p>
+
+    <div class="buttons">
+        <!--a href="/adopt" class="adopt-btn">View Available Pets</a>-->
+        <a href="/adopt?type={{ pet_type }}" class="adopt-btn">
+        View Available Pets
+        </a>
+
+        <a href="/" class="home-btn">Back to Home</a>
+    </div>
+</div>
+
+</body>
+</html>

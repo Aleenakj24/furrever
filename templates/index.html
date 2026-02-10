@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>FurrEver 🐾</title>
+
+    <!-- Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Poppins', sans-serif;
+            background: #f9f9f9;
+            color: #333;
+        }
+
+        /* NAVBAR */
+        .navbar {
+            background: #ffffff;
+            padding: 15px 50px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        }
+
+        .logo {
+            font-size: 22px;
+            font-weight: 600;
+            color: #ff7a00;
+        }
+
+        .nav-links a {
+            margin-left: 25px;
+            text-decoration: none;
+            color: #444;
+            font-weight: 500;
+        }
+
+        /* HERO */
+        .hero {
+            background: #fff;
+            padding: 60px 50px;
+            display: grid;
+            grid-template-columns: 1.2fr 1fr;
+            gap: 40px;
+            align-items: center;
+        }
+
+        .hero h1 {
+            font-size: 40px;
+            margin-bottom: 15px;
+        }
+
+        .hero p {
+            font-size: 16px;
+            color: #666;
+        }
+
+        /* SERVICES */
+        .services {
+            padding: 50px;
+            background: #f9f9f9;
+        }
+
+        .services h2 {
+            text-align: center;
+            margin-bottom: 40px;
+            font-size: 28px;
+        }
+
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 25px;
+        }
+
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 14px;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+            text-align: center;
+        }
+
+        .card h3 {
+            margin: 10px 0;
+            font-size: 18px;
+        }
+
+        .card p {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .card a {
+            display: inline-block;
+            margin-top: 15px;
+            padding: 10px 20px;
+            background: #ff7a00;
+            color: white;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        footer {
+            background: #fff;
+            text-align: center;
+            padding: 15px;
+            font-size: 13px;
+            color: #777;
+            margin-top: 40px;
+        }
+    </style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<div class="navbar">
+    <div class="logo">FurrEver 🐾</div>
+    <div class="nav-links">
+        <a href="/">Home</a>
+        <a href="/adopt">Adopt</a>
+        <a href="/add-pet">Add Pet</a>
+        <a href="/paw-gram">Paw-Gram</a>
+    </div>
+</div>
+
+<!-- HERO -->
+<div class="hero">
+    <div>
+        <h1>Your Trusted Pet Care & Adoption Platform</h1>
+        <p>Adopt, care, connect, and protect pets — all in one place.</p>
+    </div>
+    <img src="/static/uploads/bruno.jpg" width="100%" style="border-radius:20px;">
+</div>
+
+<!-- SERVICES -->
+<div class="services">
+    <h2>Our Services</h2>
+
+    <div class="cards">
+
+        <div class="card">
+            <h3>Adopt a Pet</h3>
+            <p>Find pets waiting for a loving forever home.</p>
+            <a href="/adopt">Explore</a>
+        </div>
+
+        <div class="card">
+            <h3>Add a Pet</h3>
+            <p>List pets from shelters or individuals.</p>
+            <a href="/add-pet">Add Pet</a>
+        </div>
+
+        <div class="card">
+            <h3>AI Pet Match</h3>
+            <p>Find the best pet for your lifestyle.</p>
+            <a href="/pet-match">Find Match</a>
+        </div>
+
+        <div class="card">
+            <h3>Report Abuse</h3>
+            <p>Report animal abuse safely.</p>
+            <a href="{{ url_for('report_abuse') }}">Report</a>
+        </div>
+
+        <div class="card">
+            <h3>Pet Chatbot</h3>
+            <p>Ask questions about pet care.</p>
+            <a href="/chatbot">Chat</a>
+        </div>
+
+        <div class="card">
+            <h3>Paw-Gram</h3>
+            <p>A social hub just for pet lovers.</p>
+            <a href="/paw-gram">Open</a>
+        </div>
+
+        <div class="card">     <!--new card grooming-->
+            <h3>Pet Grooming</h3>
+            <p>Find nearby grooming services.</p>
+            <a href="/grooming">Find Groomers</a>
+        </div>
+
+    </div>
+</div>
+
+<footer>
+    © 2026 FurrEver • Inspired by love for pets 🐾
+</footer>
+
+</body>
+</html>

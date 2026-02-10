@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>PawCare Bot</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+*{
+    box-sizing:border-box;
+    font-family:"Segoe UI", sans-serif;
+}
+
+body{
+    margin:0;
+    height:100vh;
+    background:#f4f7fb;
+}
+
+/* Full screen app */
+.chat-app{
+    height:100vh;
+    display:flex;
+    flex-direction:column;
+}
+
+/* Header */
+.chat-header{
+    display:flex;
+    align-items:center;
+    gap:15px;
+    padding:15px 30px;
+    background:white;
+    border-bottom:1px solid #ddd;
+}
+
+.chat-header img{
+    width:45px;
+    height:45px;
+    border-radius:50%;
+}
+
+.chat-header h2{
+    margin:0;
+    font-size:20px;
+}
+
+/* Chat area */
+.chat-body{
+    flex:1;
+    padding:30px;
+    overflow-y:auto;
+    display:flex;
+    flex-direction:column;
+    background:#eaf3ff;
+}
+
+/* Messages */
+.message{
+    max-width:60%;
+    padding:14px 18px;
+    margin:10px 0;
+    border-radius:18px;
+    font-size:15px;
+}
+
+.bot{
+    background:white;
+    align-self:flex-start;
+}
+
+.user{
+    background:#4f6df5;
+    color:white;
+    align-self:flex-end;
+}
+
+/* Input bar */
+.chat-input{
+    display:flex;
+    padding:15px 25px;
+    gap:15px;
+    background:white;
+    border-top:1px solid #ddd;
+}
+
+.chat-input input{
+    flex:1;
+    border:none;
+    outline:none;
+    font-size:16px;
+}
+
+.chat-input button{
+    width:48px;
+    height:48px;
+    border-radius:50%;
+    border:none;
+    background:#4f6df5;
+    color:white;
+    font-size:20px;
+    cursor:pointer;
+}
+</style>
+</head>
+
+<body>
+
+<div class="chat-app">
+
+    <!-- Header -->
+    <div class="chat-header">
+        <img src="https://cdn-icons-png.flaticon.com/512/616/616408.png">
+        <h2>PawCare Bot</h2>
+        <a href="/" style="margin-left: auto; text-decoration: none; background: #ff6b6b; color: white; padding: 8px 16px; border-radius: 5px; cursor: pointer;">Back</a>
+    </div>
+
+    <!-- Messages -->
+    <div class="chat-body" id="chat-body">
+        <div class="message bot">Hey there! 🐶</div>
+        <div class="message bot">I’m your PetCare Assistant.</div>
+    </div>
+
+    <!-- Input -->
+    <div class="chat-input">
+        <input id="user-input" type="text" placeholder="Type a message...">
+        <button onclick="sendMessage()">➤</button>
+    </div>
+
+</div>
+
+<script>
+function sendMessage() {
+    const inputBox = document.getElementById("user-input");
+    const userInput = inputBox.value.trim();
+    if (userInput === "") return;
+
+    const chatBody = document.getElementById("chat-body");
+
+    // User message
+    const userMsg = document.createElement("div");
+    userMsg.className = "message user";
+    userMsg.textContent = userInput;
+    chatBody.appendChild(userMsg);
+
+    inputBox.value = "";
+    chatBody.scrollTop = chatBody.scrollHeight;
+
+    // ✅ Bot typing message (IMPORTANT)
+    const typingMsg = document.createElement("div");
+    typingMsg.className = "message bot typing";
+    typingMsg.textContent = "PawCare Bot is typing...";
+    chatBody.appendChild(typingMsg);
+    chatBody.scrollTop = chatBody.scrollHeight;
+
+    fetch("/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: userInput })
+    })
+    .then(res => res.json())
+    .then(data => {
+        // Remove typing message
+        typingMsg.remove();
+
+        const botMsg = document.createElement("div");
+        botMsg.className = "message bot";
+
+        const formattedReply = data.reply
+            .replace(/\*\*(.*?)\*\*/g, "<b>$1</b>")
+            .replace(/\n/g, "<br>");
+
+        botMsg.innerHTML = formattedReply;
+        chatBody.appendChild(botMsg);
+        chatBody.scrollTop = chatBody.scrollHeight;
+    })
+    .catch(err => {
+        typingMsg.textContent = "Error getting response ❌";
+        console.error(err);
+    });
+}
+</script>
+
+</body>
+</html>

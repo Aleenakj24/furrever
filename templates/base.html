@@ -1,0 +1,94 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Paw-Gram 🐾</title>
+
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" />
+
+  <link rel="stylesheet" href="{{ url_for('static', filename='pawgram.css') }}">
+  {% block extra_css %}{% endblock %}
+</head>
+
+<body>
+<div class="app">
+
+  <!-- LEFT SIDEBAR -->
+  <aside class="sidebar">
+    <div class="logo">
+      Paw-Gram 🐾<br>
+      <small>{{ session.get('name') }}</small>
+    </div>
+
+    <nav>
+      <a href="{{ url_for('paw_gram') }}" class="nav-item">
+        <span class="material-symbols-outlined">home</span> Home
+      </a>
+
+      <a href="{{ url_for('profile', username=session.get('name')) }}"
+         class="nav-item">
+        <span class="material-symbols-outlined">account_circle</span> Profile
+      </a>
+    </nav>
+
+    <a href="{{ url_for('logout') }}" class="nav-item logout">
+      <span class="material-symbols-outlined">logout</span> Logout
+    </a>
+
+    <a href="{{ url_for('paw_feed') }}" class="nav-item">
+  <span class="material-symbols-outlined">pets</span> Paw Feed
+</a>
+
+    
+    <div class="create-btn" onclick="openPost()">+ Create Post</div>
+
+
+  </aside>
+
+  
+
+  <!-- MAIN CONTENT -->
+  <main class="main">
+
+    <div id="createPostModal" class="post-modal" style="display:none;">
+  <div class="post-modal-content">
+    <span class="close-btn" onclick="closeCreatePost()">✖</span>
+
+    <h3>Create New Post</h3>
+
+
+    <form method="POST" action="{{ url_for('paw_gram') }}" enctype="multipart/form-data">
+      <input type="file" name="image" required>
+      <textarea name="caption" placeholder="Write a caption..."></textarea>
+      <button type="submit">Post</button>
+    </form>
+  </div>
+</div>
+
+    {% block content %}{% endblock %}
+  </main>
+
+</div>
+<script>
+
+
+function openPost() {
+  document.getElementById("createPostModal").style.display = "flex";
+}
+
+function openPost() {
+  const modal = document.getElementById("createPostModal");
+  if (modal) modal.style.display = "flex";
+}
+
+function closeCreatePost() {
+  document.getElementById("createPostModal").style.display = "none";
+}
+
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,324 @@
+
+<!--!DOCTYPE html>
+<html>
+<head>
+  <title>{{ user.name }} | Paw-Gram</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='profile.css') }}">
+</head>
+
+<body>-->
+
+{% extends "base.html" %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='profile.css') }}">
+{% endblock %}
+
+{% block content %}
+
+<div class="profile-container">
+
+   <!-- USERNAME ROW -->
+  <div class="username-row">
+    <h2>{{ user.name }}</h2>
+  </div>
+  <div class="profile-header">
+
+  <!-- PROFILE PIC 
+  <img src="{{ url_for('static', filename='uploads/' ~ user.profile_pic) }}"
+       class="profile-pic">
+       <img src="{{ url_for('static', filename='profile_pics/' ~ (user.profile_pic or 'default-user.png')) }}"
+     class="profile-pic">-->
+     {% if user.profile_pic %}
+  <img src="{{ url_for('static', filename='profile_pics/' ~ user.profile_pic) }}" 
+  class="profile-pic">
+{% endif %}
+
+
+
+  <!-- RIGHT SIDE -->
+  <div class="profile-info">
+
+    <!-- ROW 1 : STATS -->
+    <div class="stats-row">
+      <span><b>{{ posts|length }}</b><br>posts</span>
+      <span><b>{{ user.followers_count or 0 }}</b><br>followers</span>
+      <span><b>{{ user.following_count or 0 }}</b><br>following</span>
+    </div>
+
+    <!-- ROW 2 : BIO -->
+    <div class="bio-row">
+      {{ user.bio or "No bio yet 🐾" }}
+    </div>
+
+    <!-- ROW 3 : BUTTONS -->
+    <div class="action-row">
+      {% if session['user_id'] == user.id %}
+        <a href="/edit-profile" class="edit-btn">Edit Profile</a>
+        <button class="share-btn">Share Profile</button>
+      {% endif %}
+    </div>
+
+  </div>
+</div>
+
+
+    
+     
+
+  </div>
+
+  <div class="profile-grid">
+  {% for post in posts %}
+    <div class="grid-item"
+         data-id="{{ post.id }}"
+         data-user-id="{{ post.user_id }}"
+         data-image="{{ url_for('static', filename='uploads/' + post.image) }}"
+         data-caption="{{ post.caption }}"
+        data-username="{{ post.name }}" >
+      <img src="{{ url_for('static', filename='uploads/' + post.image) }}">
+    </div>
+  {% endfor %}
+  </div>
+</div>
+
+
+
+
+</div>
+<div class="post-modal" id="postModal" onclick="closePostModal()">
+  <div class="post-modal-content" onclick="event.stopPropagation()">
+
+    <span class="close-btn" onclick="closePostModal()">✖</span>
+
+    <div class="modal-header">
+  <span class="close-btn" onclick="closePostModal()">✖</span>
+
+  <!-- OWNER MENU -->
+  <div class="post-menu" id="modalMenu" style="display:none;">
+    <span class="menu-icon" onclick="toggleModalMenu()">⋮</span>
+    <div class="menu-dropdown" id="modalDropdown">
+    <div class="delete-btn" onclick="deletePostFromModal()"></div>
+      <button onclick="deletePostFromModal()">Delete</button>
+    </div>
+  </div>
+  <span class="close-btn" onclick="closePostModal()">✖</span>
+</div>
+
+    <div class="modal-body">
+
+      <!-- LEFT : IMAGE -->
+      <div class="modal-left">
+        <img id="modalImage">
+
+        <div class="modal-icons">
+          <span id="likeBtn" onclick="toggleLike()">❤️</span>
+          <span id="likeCount">0 likes</span>
+          <span onclick="toggleComments()">💬</span>
+          <span onclick="sharePost()">📤</span>
+          
+        </div>
+        <!-- USERNAME + CAPTION -->
+        <div class="post-caption">
+          <b id="postUser">Username</b>
+          <span id="modalCaption">This is the caption of the post.</span>
+        </div>
+      </div>
+
+        <p id="modalCaption"></p>
+      </div>
+
+      
+
+      <!-- RIGHT : COMMENTS -->
+      <div class="modal-right" id="commentsPanel">
+        <h4>Comments</h4>
+
+        <div id="profileCommentsList"></div>
+
+        <div class="add-comment">
+          <input type="text" id="commentInput" placeholder="Add a comment…">
+          <button onclick="addComment()">Post</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+
+
+<script>
+let currentPostId = null;
+let postOwnerId = null;
+let commentsOpen = false;
+
+const modal = document.getElementById("postModal");
+const modalImage = document.getElementById("modalImage");
+const modalCaptionEl = document.getElementById("modalCaption");
+const postUserEl = document.getElementById("postUser");
+const likeCountEl = document.getElementById("likeCount");
+const likeBtn = document.getElementById("likeBtn");
+const modalMenu = document.getElementById("modalMenu");
+
+const loggedInUserId = "{{ session.get('user_id') }}";
+
+document.querySelectorAll(".grid-item").forEach(item => {
+  item.addEventListener("click", () => {
+    currentPostId = item.dataset.id;
+    postOwnerId = item.dataset.userId;
+
+    modalImage.src = item.dataset.image;
+    modalCaptionEl.innerText = item.dataset.caption || "";
+    postUserEl.innerText = item.dataset.username || "Unknown";
+
+    /* ✅ SHOW DELETE ONLY FOR OWNER */
+    if (postOwnerId == loggedInUserId) {
+      modalMenu.style.display = "block";
+    } else {
+      modalMenu.style.display = "none";
+    }
+    
+    loadLikes();
+    loadComments();
+    modal.style.display = "flex";
+  });
+});
+
+/* MENU */
+function toggleModalMenu() {
+  const menu = document.getElementById("modalDropdown");
+  menu.style.display = menu.style.display === "block" ? "none" : "block";
+}
+
+
+document.addEventListener("click", e => {
+  if (!e.target.closest("#modalMenu")) {
+    document.getElementById("modalDropdown").style.display = "none";
+  }
+});
+
+
+/* DELETE */
+function deletePostFromModal() {
+  if (!confirm("Delete this post?")) return;
+
+  fetch(`/delete-post/${currentPostId}`, { method: "POST" })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+
+        // 🔥 remove from grid instantly
+        document.querySelector(
+          `.grid-item[data-id="${currentPostId}"]`
+        )?.remove();
+
+        closePostModal();
+      }
+    });
+}
+
+
+/* CLOSE MODAL */
+function closePostModal() {
+  modal.style.display = "none";
+  document.getElementById("commentsPanel").style.display = "none";
+  commentsOpen = false;
+}
+
+/* COMMENTS */
+function toggleComments() {
+  const panel = document.getElementById("commentsPanel");
+  commentsOpen = !commentsOpen;
+  panel.style.display = commentsOpen ? "block" : "none";
+  if (commentsOpen) loadComments();
+}
+
+
+/* LIKES */
+function loadLikes() {
+  fetch(`/get-likes/${currentPostId}`)
+    .then(res => res.json())
+    .then(data => {
+      likeCountEl.innerText = `${data.likes} likes`;
+      likeBtn.innerText = data.liked ? "❤️" : "🤍";
+    });
+}
+
+function toggleLike() {
+  fetch("/like-post", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ post_id: currentPostId })
+  })
+  .then(res => res.json())
+  .then(data => {
+    likeCountEl.innerText = `${data.likes} likes`;
+    likeBtn.innerText = data.status === "liked" ? "❤️" : "🤍";
+  });
+}
+
+/* COMMENTS 
+function loadComments() {
+  fetch(`/get-comments/${currentPostId}`)
+    .then(res => res.json())
+    .then(comments => {
+      const list = document.getElementById("profileCommentsList");
+      list.innerHTML = "";
+      comments.forEach(c => {
+        list.innerHTML += `<div><b>${c.name}</b> ${c.comment}</div>`;
+      });
+    });
+}*/
+
+function loadComments() {
+  fetch(`/get-comments/${currentPostId}`, {
+    credentials: "same-origin"
+  })
+    .then(res => res.json())
+    .then(comments => {
+      const list = document.getElementById("profileCommentsList");
+      list.innerHTML = "";
+
+      comments.forEach(c => {
+        const profilePic = c.profile_pic
+          ? `/static/profile_pics/${c.profile_pic}`
+          : `/static/profile_pics/default-user.png`;
+
+        list.innerHTML += `
+          <div class="comment">
+            <img src="${profilePic}" class="comment-pic">
+            <div class="comment-text">
+              <strong>${c.name}</strong>
+              <span>${c.text}</span>
+            </div>
+          </div>
+        `;
+      });
+    });
+}
+
+
+function addComment() {
+  const input = document.getElementById("commentInput");
+  if (!input.value.trim()) return;
+
+  fetch("/add-comment", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ post_id: currentPostId, comment: input.value })
+  }).then(() => {
+    input.value = "";
+    loadComments();
+  });
+}
+</script>
+
+
+
+
+<!--/body>
+</html>-->
+{% endblock %}
+ 

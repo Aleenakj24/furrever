@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Paw-Gram 🐾 Login / Sign Up</title>
+  <style>
+    body, html {
+      height: 100%;
+      margin: 0;
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      background: #fafafa;
+    }
+
+   .logo {
+  font-size: 26px;               /* smaller font */
+  font-weight: 600;              /* semi-bold */
+  margin-bottom: 20px;           /* spacing below */
+  background: linear-gradient(45deg, #ff6f91, #ffc75f); /* gradient colors */
+  -webkit-background-clip: text;  /* clip gradient to text */
+  -webkit-text-fill-color: transparent; /* make text show gradient */
+  text-align: center;
+}
+    /* Paw-Gram Logo outside container */
+    /*.logo {
+      font-size: 48px;
+      font-weight: bold;
+
+      margin-bottom: 40px;
+      text-align: center;
+      
+      background : linear-gradient(135deg, #ff9a9e, #fad0c4);
+
+    }
+    
+
+    /* Container for buttons and forms */
+    .container {
+      background: #fff;
+      padding: 35px 15px;
+      border-radius: 10px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.15);
+      width: 300px;
+      max-width: 90%;
+      text-align: center;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      margin: 5px 0;
+      border-radius: 5px;
+      font-size: 16px;
+      border: none;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    button:hover {
+      opacity: 0.9;
+    }
+
+    .login-btn {
+      background: #a5c9eb;
+      color: #fff;
+    }
+
+    .signup-btn {
+      background: #2196F3;
+      color: #fff;
+    }
+
+    form {
+      display: none;
+      margin-top: 20px;
+    }
+
+    input {
+      width: 100%;
+      padding: 12px;
+      margin: 8px 0;
+      box-sizing: border-box;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 16px;
+    }
+
+    .submit-btn {
+      background: #4CAF50;
+      color: white;
+      margin-top: 15px;
+    }
+
+    .submit-btn:hover {
+      background: #8adf8f;
+    }
+  </style>
+</head>
+<body>
+
+<!-- Logo outside container -->
+<div class="logo">Paw-Gram🐾</div>
+
+<div class="container">
+  <!-- Login / Create Account buttons -->
+  <button class="login-btn" onclick="showLoginForm()">Login</button>
+  <button class="signup-btn" onclick="showSignupForm()">Create Account</button>
+
+  <!-- Login Form -->
+  <form id="login-form" method="POST" action="{{ url_for('auth') }}">
+
+     <input type="hidden" name="action" value="login">
+    <input type="email" name="email" placeholder="Email" required>
+    <input type="password" name="password" placeholder="Password" required>
+    <label style="display:flex;align-items:center;font-size:14px;margin-top:10px;">
+  <input type="checkbox" name="remember" style="margin-right:6px;">
+  Remember me
+</label>
+
+    <button type="submit" class="submit-btn">Login</button>
+  </form>
+
+  <!-- Signup Form -->
+  <form id="signup-form" method="POST" action="{{ url_for('auth') }}">
+
+    <input type="hidden" name="action" value="signup">
+    <input type="text" name="name" placeholder="Username" required>
+    <input type="email" name="email" placeholder="Email" required>
+    <input type="password" name="password" placeholder="Password" required>
+    <button type="submit" class="submit-btn">Create Account</button>
+  </form>
+</div>
+
+<script>
+function showLoginForm() {
+  document.getElementById('login-form').style.display = 'block';
+  document.getElementById('signup-form').style.display = 'none';
+}
+
+function showSignupForm() {
+  document.getElementById('signup-form').style.display = 'block';
+  document.getElementById('login-form').style.display = 'none';
+}
+</script>
+
+</body>
+</html>

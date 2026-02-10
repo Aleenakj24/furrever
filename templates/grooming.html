@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Nearby Grooming Services | FurrEver</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+<!-- Leaflet -->
+<link rel="stylesheet"
+ href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+<style>
+body{
+    margin:0;
+    font-family:'Poppins', sans-serif;
+    background:#f9f9f9;
+}
+
+/* NAVBAR */
+.navbar{
+    background:white;
+    padding:15px 50px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    box-shadow:0 2px 10px rgba(0,0,0,0.08);
+}
+
+.logo{
+    font-size:22px;
+    font-weight:600;
+    color:#ff7a00;
+}
+
+.back{
+    text-decoration:none;
+    color:#ff7a00;
+    font-weight:500;
+}
+
+/* CONTENT */
+.container{
+    max-width:1100px;
+    margin:40px auto;
+    padding:20px;
+}
+
+h1{
+    text-align:center;
+    margin-bottom:20px;
+}
+
+.search{
+    text-align:center;
+    margin-bottom:15px;
+}
+
+#searchBox{
+    width:260px;
+    padding:10px;
+    border-radius:8px;
+    border:1px solid #ccc;
+}
+
+.search button{
+    padding:10px 16px;
+    border:none;
+    background:#ff7a00;
+    color:white;
+    border-radius:8px;
+    cursor:pointer;
+}
+
+/* MAP */
+#map{
+    height:500px;
+    width:100%;
+    border-radius:16px;
+    box-shadow:0 6px 18px rgba(0,0,0,0.08);
+}
+</style>
+</head>
+
+<body>
+
+<!-- NAV -->
+<div class="navbar">
+    <div class="logo">FurrEver 🐾</div>
+    <a class="back" href="/">← Back to Home</a>
+</div>
+
+<div class="container">
+
+    <h1>Nearby Grooming Services</h1>
+
+    <!-- SEARCH -->
+    <div class="search">
+        <input type="text" id="searchBox"
+         placeholder="Search city / place">
+         <p id="status" style="text-align:center;color:#777;"></p>
+
+        <button onclick="searchLocation()">Search</button>
+    </div>
+
+    <!-- MAP -->
+    <div id="map"></div>
+
+</div>
+
+<script>
+var map = L.map('map').setView([9.9312,76.2673],13);
+
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png')
+.addTo(map);
+
+var serviceMarkers=[];
+
+/* SEARCH 
+function searchLocation(){
+
+ let place=document.getElementById("searchBox").value;
+
+ fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${place}`)
+ .then(res=>res.json())
+ .then(data=>{
+
+  if(data.length==0){
+    alert("Location not found");
+    return;
+  }
+
+  let lat=data[0].lat;
+  let lon=data[0].lon;
+
+  // Move map ONLY (no arrow)
+  map.setView([lat,lon],14);
+
+  loadNearbyServices(lat,lon);
+ });
+}*/
+
+
+function searchLocation(){
+
+ let place = document.getElementById("searchBox").value.trim();
+
+ if(!place){
+   alert("Please enter a place");
+   return;
+ }
+
+ fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${place}`)
+ .then(res => res.json())
+ .then(data => {
+
+  if(data.length === 0){
+    alert("Location not found");
+    return;
+  }
+
+  let lat = parseFloat(data[0].lat);
+  let lon = parseFloat(data[0].lon);
+
+  map.setView([lat, lon], 14);
+  loadNearbyServices(lat, lon);
+ });
+}
+
+
+function loadNearbyServices(lat,lon){
+
+ document.getElementById("status").innerText =
+  "Searching nearby grooming services...";
+
+ serviceMarkers.forEach(m => map.removeLayer(m));
+ serviceMarkers = [];
+
+ let query = `
+ [out:json];
+ (
+  node(around:5000,${lat},${lon})["shop"="pet_grooming"];
+  way(around:5000,${lat},${lon})["shop"="pet_grooming"];
+ );
+ out center;
+ `;
+
+ fetch("https://overpass-api.de/api/interpreter",{
+  method:"POST",
+  body:query
+ })
+ .then(res => res.json())
+ .then(data => {
+
+  document.getElementById("status").innerText = "";
+
+  if(data.elements.length === 0){
+    alert("No grooming services found nearby");
+    return;
+  }
+
+  data.elements.forEach(p => {
+
+   let lat = p.lat || p.center.lat;
+   let lon = p.lon || p.center.lon;
+   let name = p.tags.name || "Pet Grooming ✂️";
+
+   let marker = L.marker([lat,lon])
+     .addTo(map)
+     .bindPopup(`<b>${name}</b><br>Pet Grooming`);
+
+   serviceMarkers.push(marker);
+  });
+ });
+}
+
+
+
+/* LOAD SERVICES 
+function loadNearbyServices(lat,lon){
+
+ serviceMarkers.forEach(m=>map.removeLayer(m));
+ serviceMarkers=[];
+
+ let query=`
+ [out:json];
+ (
+  node(around:5000,${lat},${lon})["amenity"="animal_shelter"];
+  way(around:5000,${lat},${lon})["amenity"="animal_shelter"];
+
+  node(around:5000,${lat},${lon})["shop"="pet_grooming"];
+  way(around:5000,${lat},${lon})["shop"="pet_grooming"];
+ );
+ out center;
+ `;
+
+ fetch("https://overpass-api.de/api/interpreter",{
+  method:"POST",
+  body:query
+ })
+ .then(res=>res.json())
+ .then(data=>{
+
+  if(data.elements.length==0){
+   alert("No shelters or grooming services found");
+  }
+
+  data.elements.forEach(p=>{
+
+   let lat = p.lat || p.center.lat;
+   let lon = p.lon || p.center.lon;
+
+   let type =
+    p.tags.amenity=="animal_shelter"
+    ? "Shelter 🐶" : "Grooming ✂️";
+
+   let name = p.tags.name || type;
+
+   let marker=L.marker([lat,lon])
+   .addTo(map)
+   .bindPopup(`<b>${name}</b><br>${type}`);
+
+   serviceMarkers.push(marker);
+  });
+ });
+}*/
+loadNearbyServices(9.9312, 76.2673);
+
+</script>
+
+
+
+
+
+
+
+</body>
+</html>

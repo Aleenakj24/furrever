@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>AI Pet Matching</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(to right, #56ab2f, #a8e063);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .card {
+            background: white;
+            padding: 30px;
+            width: 400px;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.25);
+        }
+
+        h2 {
+            text-align: center;
+            color: #2c3e50;
+        }
+
+        label {
+            font-weight: bold;
+            margin-top: 15px;
+            display: block;
+        }
+
+        select, button {
+            width: 100%;
+            padding: 10px;
+            margin-top: 8px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+        }
+
+        button {
+            background: #27ae60;
+            color: white;
+            font-size: 16px;
+            margin-top: 20px;
+            cursor: pointer;
+            border: none;
+        }
+
+        button:hover {
+            background: #219150;
+        }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h2>Find Your Best Pet Match 🐾</h2>
+
+    <!-- FORM START -->
+    <form method="POST" action="/pet-match">
+
+        <label>Home Type</label>
+        <select name="home" required>
+            <option value="">Select</option>
+            <option value="apartment">Apartment</option>
+            <option value="house">House</option>
+        </select>
+
+        <label>Pet Experience</label>
+        <select name="experience" required>
+            <option value="">Select</option>
+            <option value="beginner">Beginner</option>
+            <option value="experienced">Experienced</option>
+        </select>
+
+        <label>Time Available for Pet</label>
+        <select name="time" required>
+            <option value="">Select</option>
+            <option value="low">Low</option>
+            <option value="high">High</option>
+        </select>
+
+        <!-- IMPORTANT -->
+        <button type="submit">Find Best Match</button>
+
+    </form>
+    <!-- FORM END -->
+</div>
+
+</body>
+</html>

@@ -1,0 +1,21 @@
+
+{% extends "base.html" %}
+
+{% block content %}
+<h2 class="feed-title">🐾 Paw Feed</h2>
+
+<div class="feed-grid">
+  {% for post in posts %}
+    <div class="feed-card">
+      <img src="{{ url_for('static', filename='uploads/' + post.image) }}" alt="post">
+
+      <div class="feed-info">
+        <b>{{ post.name }}</b>
+        {% if post.caption %}
+          <p>{{ post.caption }}</p>
+        {% endif %}
+      </div>
+    </div>
+  {% endfor %}
+</div>
+{% endblock %}

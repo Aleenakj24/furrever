@@ -1,0 +1,140 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Report Animal Abuse | FurrEver</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            background: #f4f6f8;
+            color: #333;
+        }
+
+        .page-header {
+            background: #1e3a5f;
+            color: white;
+            padding: 40px 20px;
+            text-align: center;
+        }
+
+        .page-header h1 {
+            margin: 0;
+            font-size: 30px;
+        }
+
+        .page-header p {
+            margin-top: 10px;
+            font-size: 15px;
+            opacity: 0.9;
+        }
+
+        .container {
+            max-width: 720px;
+            margin: 40px auto;
+            background: white;
+            padding: 35px;
+            border-radius: 14px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+        }
+
+        .notice {
+            background: #eef4ff;
+            border-left: 5px solid #1e3a5f;
+            padding: 15px;
+            font-size: 14px;
+            margin-bottom: 25px;
+        }
+
+        label {
+            font-size: 14px;
+            font-weight: 500;
+            display: block;
+            margin-bottom: 6px;
+        }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 18px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            font-family: inherit;
+        }
+
+        textarea {
+            resize: none;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background: #c62828;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 15px;
+            cursor: pointer;
+        }
+
+        .confidential {
+            font-size: 13px;
+            color: #555;
+            margin-top: 15px;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="page-header">
+    <h1>Report Animal Abuse</h1>
+    <p>Your voice can protect animals from harm</p>
+</div>
+
+<div class="container">
+
+    <div class="notice">
+        All reports are treated confidentially. Please provide accurate information to help authorities and NGOs take appropriate action.
+    </div>
+
+    <form method="POST" enctype="multipart/form-data">
+
+        <label>Type of Abuse</label>
+        <select name="abuse_type" required>
+            <option value="">Select an option</option>
+            <option>Physical Abuse</option>
+            <option>Neglect</option>
+            <option>Abandonment</option>
+            <option>Illegal Breeding</option>
+            <option>Other</option>
+        </select>
+
+        <label>Location of Incident</label>
+        <input type="text" name="location" placeholder="Area, City, Landmark" required>
+
+        <label>Date of Incident</label>
+        <input type="date" name="date" required>
+
+        <label>Description of Incident</label>
+        <textarea name="description" rows="5" placeholder="Describe what you witnessed..." required></textarea>
+
+        <label>Upload Evidence (optional)</label>
+        <input type="file" name="evidence">
+
+        <button type="submit">Submit Report</button>
+    </form>
+
+    <div class="confidential">
+        FurrEver works with registered NGOs and local authorities to ensure animal safety.
+    </div>
+
+</div>
+
+</body>
+</html>
