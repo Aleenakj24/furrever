@@ -14,7 +14,7 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
 EMAIL_ADDRESS = "furrever.abuse.reports@gmail.com"
-EMAIL_PASSWORD = "szoy mvpr bhea tdmj"
+EMAIL_PASSWORD = "tijf mlxs bqjv srpd"
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
 
 def allowed_file(filename):
@@ -215,20 +215,7 @@ def report_abuse():
 
     return render_template("report.html")
 
-#@app.route('/submit-abuse', methods=['POST'])
-#def submit_abuse():
-   # pet_name = request.form['pet_name']
-   # location = request.form['location']
-  #  details = request.form['details']
 
- #   cursor = db.cursor()
-#    cursor.execute(
-    #    "INSERT INTO abuse_reports (pet_name, location, details) VALUES (%s, %s, %s)",
-   #     (pet_name, location, details)
-  #  )
- #   db.commit()
-#
-#    return render_template('abuse_success.html')
 
 @app.route('/chatbot')
 def chatbot():
