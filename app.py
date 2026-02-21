@@ -1,3 +1,4 @@
+
 #http://127.0.0.1:5000/
 from flask import Flask, render_template, request, redirect,session, url_for
 import mysql.connector
@@ -14,7 +15,7 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
 EMAIL_ADDRESS = "furrever.abuse.reports@gmail.com"
-EMAIL_PASSWORD = "tijf mlxs bqjv srpd"
+EMAIL_PASSWORD = "tijf mlxs bqjv srpd" 
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
 
 def allowed_file(filename):
@@ -331,40 +332,136 @@ def chat():
 
 # -------- PET MATCH PAGE --------
 
+
+
+def get_ai_pet_match(home, experience, time, pets):
+
+    if not pets:
+        return []
+
+    pet_list_text = ""
+    for pet in pets:
+        pet_list_text += f"""
+    ID: {pet['id']} 
+    Name: {pet.get('name', '')}
+    Type: {pet.get('type', '')}
+    Age: {pet.get('age', '')}
+    Temperament: {pet.get('temperament', 'Unknown')}
+    Description: {pet.get('description', 'No description')}
+    ---
+"""
+
+    prompt = f"""
+    You are a pet adoption recommendation engine.
+
+    User Details:
+    Home type: {home}
+    Experience level: {experience}
+    Free time available: {time}
+
+    Available Pets:
+    {pet_list_text}
+
+    Select up to 3 most suitable pets.
+
+    IMPORTANT:
+        - Only return numeric IDs.
+        - Separate them using commas.
+        - If none are suitable, return exactly: NONE
+
+    Example:
+    1,5,8
+
+
+
+    Do not explain anything.
+    Only return the numbers.
+    """
+
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={API_KEY}"
+
+    headers = {
+        "Content-Type": "application/json"
+    }
+
+    data = {
+        "contents": [{
+            "parts": [{"text": prompt}]
+        }]
+    }
+
+    try:
+        response = requests.post(url, headers=headers, json=data)
+        response.raise_for_status()
+
+        result = response.json()
+
+        print("FULL GEMINI RESPONSE:")
+        print(result)
+
+        text = ""
+
+        if "candidates" in result and result["candidates"]:
+            content = result["candidates"][0].get("content", {})
+            parts = content.get("parts", [])
+        if parts and "text" in parts[0]:
+            text = parts[0]["text"]
+
+        print("AI RAW OUTPUT:", text)
+
+        if not text:
+            return []
+
+        if "NONE" in text.upper():
+            return []
+
+        ids = [int(num) for num in re.findall(r"\d+", text)]
+
+        print("Extracted IDs:", ids)
+
+        return ids
+
+
+
+
+    except Exception as e:
+        print("AI Matching Error:", e)
+        return []
+
+
+
+
 @app.route('/pet-match', methods=['GET', 'POST'])
 def pet_match():
     if request.method == 'POST':
 
-        # 1. Get user input
-        home = request.form['home']
-        experience = request.form['experience']
-        time = request.form['time']
+        home = request.form.get('home', '')
+        experience = request.form.get('experience', '')
+        time = request.form.get('time', '')
 
-        # 2. AI / Rule-based logic
-        if home == 'apartment' and time == 'low':
-            pet_type = "Cat"
-        elif home == 'house' and time == 'high':
-            pet_type = "Dog"
-        else:
-            pet_type = "Rabbit"
-
-        # 3. (Optional) DB filter based on pet_type
+        # 1️⃣ Get all pets from DB
+        db = get_db()
         cursor = db.cursor(dictionary=True)
-        cursor.execute(
-            "SELECT * FROM pets WHERE type = %s",
-            (pet_type,)
-        )
-        pets = cursor.fetchall()
+        cursor.execute("SELECT * FROM pets")
+        all_pets = cursor.fetchall()
 
-        # 4. Show result page
+        # 2️⃣ Send to AI
+        matched_ids = get_ai_pet_match(home, experience, time, all_pets)
+
+        # 3️⃣ Filter matched pets
+        matched_pets = [
+            pet for pet in all_pets
+            if pet["id"] in matched_ids
+        ]
+
         return render_template(
             'pet_match_result.html',
-            pet_type=pet_type,
-            pets=pets
+            pets=matched_pets
         )
 
-    # GET → show input page
     return render_template('pet_match.html')
+
+
 
 # -------- PAW-GRAM (SOCIAL FEED) --------
 
@@ -742,6 +839,70 @@ def get_map_data():
     return jsonify({"shelters":shelters})
 
 
+# -------- GROOMING MAP DATA --------
+@app.route("/get-grooming-data")
+def get_grooming_data():
+
+    place = request.args.get("place", "").strip().lower()
+
+    db = get_db()
+    cursor = db.cursor(dictionary=True)
+
+    if place:
+        query = """
+            SELECT * FROM grooming_centers
+            WHERE LOWER(city) LIKE %s
+               OR LOWER(address) LIKE %s
+        """
+        search_term = f"%{place}%"
+        cursor.execute(query, (search_term, search_term))
+    else:
+        cursor.execute("SELECT * FROM grooming_centers")
+
+    grooming = cursor.fetchall()
+
+    return jsonify({"grooming": grooming})
+
+
+@app.route("/health-services")
+def health_services():
+    return render_template("health_services.html")
+
+@app.route("/get-health-services")
+def get_health_services():
+
+    place = request.args.get("place", "").lower()
+
+    db = get_db()
+    cursor = db.cursor(dictionary=True)
+
+    # -------- VETS --------
+    if place:
+        cursor.execute("""
+            SELECT *, 'vet' AS type FROM vet_services
+            WHERE LOWER(city) LIKE %s
+            OR LOWER(district) LIKE %s
+        """, (f"%{place}%", f"%{place}%"))
+    else:
+        cursor.execute("SELECT *, 'vet' AS type FROM vet_services")
+
+    vets = cursor.fetchall()
+
+    # -------- PHARMACIES --------
+    if place:
+        cursor.execute("""
+            SELECT *, 'pharmacy' AS type FROM pet_pharmacies
+            WHERE LOWER(city) LIKE %s
+            OR LOWER(district) LIKE %s
+        """, (f"%{place}%", f"%{place}%"))
+    else:
+        cursor.execute("SELECT *, 'pharmacy' AS type FROM pet_pharmacies")
+
+    pharmacies = cursor.fetchall()
+
+    services = vets + pharmacies
+
+    return jsonify({"services": services})
 
 
 

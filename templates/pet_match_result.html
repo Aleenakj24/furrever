@@ -107,7 +107,13 @@
         {% endfor %}
     </ul>
     {% else %}
-        <p>No {{ pet_type }}s available right now.</p>
+        <!--p>No {{ pet_type }}s available right now.</p>-->
+        {% if pet_type %}
+            <p>No {{ pet_type }}s available right now.</p>
+        {% else %}
+            <p>No pets available right now.</p>
+        {% endif %}
+
     {% endif %}
 
 

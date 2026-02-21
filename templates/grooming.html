@@ -80,6 +80,52 @@ h1{
     border-radius:16px;
     box-shadow:0 6px 18px rgba(0,0,0,0.08);
 }
+
+
+/* POPUP CARD DESIGN */
+.popup-card{
+    font-family:'Poppins', sans-serif;
+    width:240px;
+}
+
+.popup-header{
+    font-size:16px;
+    font-weight:600;
+    color:#ff7a00;
+    margin-bottom:8px;
+}
+
+.popup-body p{
+    font-size:13px;
+    margin:6px 0;
+    color:#444;
+}
+
+.popup-footer{
+    margin-top:10px;
+    text-align:center;
+}
+
+.popup-footer button{
+    background:#ff7a00;
+    color:white;
+    border:none;
+    padding:6px 12px;
+    border-radius:8px;
+    cursor:pointer;
+    font-size:12px;
+}
+
+.popup-footer button:hover{
+    background:#e66a00;
+}
+
+/* Smooth popup edges */
+.leaflet-popup-content-wrapper{
+    border-radius:14px;
+}
+
+
 </style>
 </head>
 
@@ -99,7 +145,13 @@ h1{
     <div class="search">
         <input type="text" id="searchBox"
          placeholder="Search city / place">
-         <p id="status" style="text-align:center;color:#777;"></p>
+         <!--p id="status" style="text-align:center;color:#777;"></p>-->
+         <p id="status"
+   style="text-align:center;
+          font-weight:500;
+          margin-top:10px;">
+</p>
+
 
         <button onclick="searchLocation()">Search</button>
     </div>
@@ -142,7 +194,7 @@ function searchLocation(){
 }*/
 
 
-function searchLocation(){
+/*function searchLocation(){
 
  let place = document.getElementById("searchBox").value.trim();
 
@@ -166,10 +218,10 @@ function searchLocation(){
   map.setView([lat, lon], 14);
   loadNearbyServices(lat, lon);
  });
-}
+}*/
 
 
-function loadNearbyServices(lat,lon){
+/*function loadNearbyServices(lat,lon){
 
  document.getElementById("status").innerText =
   "Searching nearby grooming services...";
@@ -215,57 +267,94 @@ function loadNearbyServices(lat,lon){
  });
 }
 
+loadNearbyServices(9.9312, 76.2673);*/
+function searchLocation(){
+
+ let city = document.getElementById("searchBox").value.trim();
+
+ if(!city){
+   alert("Please enter a city");
+   return;
+ }
+
+ loadNearbyServices(city);
+}
+
+function loadNearbyServices(place = "") {
+
+    document.getElementById("status").innerText =
+        "Loading grooming centers...";
+
+    // Remove old markers
+    serviceMarkers.forEach(m => map.removeLayer(m));
+    serviceMarkers = [];
+
+    fetch(`/get-grooming-data?place=${place}`)
+    .then(res => res.json())
+    .then(data => {
+
+        if (!data.grooming || data.grooming.length === 0) {
+            document.getElementById("status").innerText =
+                "❌ No grooming centers found for this location.";
+            return;
+        }
+
+        document.getElementById("status").innerText =
+            `✅ ${data.grooming.length} grooming center(s) found`;
+
+        data.grooming.forEach(p => {
+
+            let cardHTML = `
+                <div class="popup-card">
+
+                    <div class="popup-header">
+                        🐾 ${p.name}
+                    </div>
+
+                    <div class="popup-body">
+                        <p><strong>📍 Address:</strong><br>${p.address}</p>
+
+                        ${p.phone ? 
+                            `<p><strong>📞 Phone:</strong> ${p.phone}</p>` 
+                            : ""}
+
+                        ${p.services ? 
+                            `<p><strong>✂ Services:</strong> ${p.services}</p>` 
+                            : ""}
+                    </div>
+
+                    <div class="popup-footer">
+                        <button onclick="navigateTo(${p.latitude}, ${p.longitude})">
+                            Get Directions
+                        </button>
+                    </div>
+
+                </div>
+            `;
+
+            let marker = L.marker([p.latitude, p.longitude])
+                .addTo(map)
+                .bindPopup(cardHTML);
+
+            serviceMarkers.push(marker);
+        });
+
+    })
+    .catch(error => {
+        console.error("Error loading grooming centers:", error);
+        document.getElementById("status").innerText =
+            "⚠️ Error loading grooming centers.";
+    });
+}
 
 
-/* LOAD SERVICES 
-function loadNearbyServices(lat,lon){
+function navigateTo(lat, lon){
+    window.open(
+        `https://www.google.com/maps?q=${lat},${lon}`,
+        "_blank"
+    );
+}
 
- serviceMarkers.forEach(m=>map.removeLayer(m));
- serviceMarkers=[];
-
- let query=`
- [out:json];
- (
-  node(around:5000,${lat},${lon})["amenity"="animal_shelter"];
-  way(around:5000,${lat},${lon})["amenity"="animal_shelter"];
-
-  node(around:5000,${lat},${lon})["shop"="pet_grooming"];
-  way(around:5000,${lat},${lon})["shop"="pet_grooming"];
- );
- out center;
- `;
-
- fetch("https://overpass-api.de/api/interpreter",{
-  method:"POST",
-  body:query
- })
- .then(res=>res.json())
- .then(data=>{
-
-  if(data.elements.length==0){
-   alert("No shelters or grooming services found");
-  }
-
-  data.elements.forEach(p=>{
-
-   let lat = p.lat || p.center.lat;
-   let lon = p.lon || p.center.lon;
-
-   let type =
-    p.tags.amenity=="animal_shelter"
-    ? "Shelter 🐶" : "Grooming ✂️";
-
-   let name = p.tags.name || type;
-
-   let marker=L.marker([lat,lon])
-   .addTo(map)
-   .bindPopup(`<b>${name}</b><br>${type}`);
-
-   serviceMarkers.push(marker);
-  });
- });
-}*/
-loadNearbyServices(9.9312, 76.2673);
 
 </script>
 
