@@ -1,0 +1,673 @@
+
+<!--!DOCTYPE html>
+<html>
+<head>
+    <title>Pet Health Services</title>
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+
+    <style>
+        body{
+            margin:0;
+            font-family:'Poppins', sans-serif;
+        }
+
+        #map{
+            height:80vh;
+            width:100%;
+        }
+
+        .top-bar{
+            padding:15px;
+            background:#ff7a00;
+            color:white;
+            display:flex;
+            gap:10px;
+            align-items:center;
+        }
+
+        input{
+            padding:8px;
+            border:none;
+            border-radius:6px;
+            width:200px;
+        }
+
+        button{
+            padding:8px 14px;
+            border:none;
+            border-radius:6px;
+            background:white;
+            color:#ff7a00;
+            cursor:pointer;
+            font-weight:600;
+        }
+
+        #status{
+            padding:10px;
+            font-size:14px;
+        }
+
+        .popup-card{
+            width:220px;
+        }
+
+        .popup-header{
+            font-weight:600;
+            color:#ff7a00;
+            margin-bottom:6px;
+        }
+
+        .popup-body p{
+            font-size:13px;
+            margin:4px 0;
+        }
+
+        .popup-footer{
+            text-align:center;
+            margin-top:8px;
+        }
+
+        .popup-footer button{
+            background:#ff7a00;
+            color:white;
+            padding:6px 10px;
+            border-radius:6px;
+            font-size:12px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="top-bar">
+    <input type="text" id="searchInput" placeholder="Enter city or district">
+    <button onclick="searchServices()">Search</button>
+</div>
+
+<div id="status"></div>
+<div id="map"></div>
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+<script>
+
+let map = L.map('map').setView([10.8505, 76.2711], 8); // Kerala center
+
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution:'© OpenStreetMap'
+}).addTo(map);
+
+let serviceMarkers = [];
+
+
+function searchServices(){
+    let place = document.getElementById("searchInput").value;
+    loadHealthServices(place);
+}
+
+
+function loadHealthServices(place=""){
+
+    document.getElementById("status").innerText =
+        "Loading services...";
+
+    serviceMarkers.forEach(m => map.removeLayer(m));
+    serviceMarkers = [];
+
+    fetch(`/get-health-services?place=${place}`)
+    .then(res => res.json())
+    .then(data => {
+
+        if(!data.services || data.services.length === 0){
+            document.getElementById("status").innerText =
+                "❌ No services found.";
+            return;
+        }
+
+        document.getElementById("status").innerText =
+            `✅ ${data.services.length} service(s) found`;
+
+        data.services.forEach(p => {
+
+            let iconEmoji = p.type === "vet" ? "🏥" : "💊";
+
+            let extraInfo = "";
+
+            if(p.type === "vet"){
+                extraInfo = `
+                    <p><strong>🩺 Services:</strong> ${p.services || ""}</p>
+                `;
+            } else {
+                extraInfo = `
+                    <p><strong>💊 Medicines:</strong> ${p.medicines_available || ""}</p>
+                `;
+            }
+
+            let popupHTML = `
+                <div class="popup-card">
+                    <div class="popup-header">
+                        ${iconEmoji} ${p.name}
+                    </div>
+
+                    <div class="popup-body">
+                        <p><strong>📍 Address:</strong><br>${p.address}</p>
+                        <p><strong>📞 Phone:</strong> ${p.phone || "N/A"}</p>
+                        <p><strong>🕒 Timings:</strong> ${p.timings || "N/A"}</p>
+                        ${extraInfo}
+                    </div>
+
+                    <div class="popup-footer">
+                        <button onclick="navigateTo(${p.latitude}, ${p.longitude})">
+                            Get Directions
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            let marker = L.marker([p.latitude, p.longitude])
+                .addTo(map)
+                .bindPopup(popupHTML);
+
+            serviceMarkers.push(marker);
+        });
+
+    });
+}
+
+
+function navigateTo(lat, lon){
+    window.open(
+        `https://www.google.com/maps?q=${lat},${lon}`,
+        "_blank"
+    );
+}
+
+
+// Load all on page start
+loadHealthServices();
+
+</script>
+
+</body>
+</html>
+
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Pet Health & Services | FurrEver</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(to right, #f8fbff, #eef5ff);
+        }
+
+        .container {
+            width: 90%;
+            max-width: 1100px;
+            margin: auto;
+            padding: 50px 0;
+        }
+
+        /* ===== HERO SECTION ===== */
+        .hero {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        .hero h1 {
+            font-size: 36px;
+            margin-bottom: 15px;
+            color: #222;
+        }
+
+        .hero p {
+            max-width: 750px;
+            margin: auto;
+            color: #555;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+
+        /* ===== HEALTH GRID ===== */
+        .health-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 25px;
+            margin-bottom: 60px;
+        }
+
+        .health-card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+            transition: 0.3s ease;
+            border-left: 5px solid #007bff;
+        }
+
+        .health-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 25px rgba(0,0,0,0.08);
+        }
+
+        .health-card h3 {
+            margin-bottom: 10px;
+            font-size: 18px;
+            color: #333;
+        }
+
+        .health-card p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        /* ===== SERVICES CARD ===== */
+        .services-card {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.06);
+            text-align: center;
+        }
+
+        .services-card h2 {
+            margin-bottom: 15px;
+            font-size: 24px;
+        }
+
+        .services-card p {
+            color: #555;
+            margin-bottom: 25px;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 14px 25px;
+            margin: 10px;
+            border-radius: 10px;
+            text-decoration: none;
+            color: white;
+            font-weight: 600;
+            font-size: 14px;
+            transition: 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .vet-btn {
+            background: linear-gradient(135deg, #28a745, #20c997);
+        }
+
+        .pharmacy-btn {
+            background: linear-gradient(135deg, #007bff, #6610f2);
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 60px;
+            color: #777;
+            font-size: 13px;
+        }
+
+        @media(max-width: 600px) {
+            .hero h1 {
+                font-size: 28px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>🐾 Pet Health & Care</h1>
+    <p class="intro">
+        Keep your pets healthy and happy. Learn about preventive care, vaccinations, nutrition, 
+        and quickly locate nearby Government Veterinary Hospitals and Pharmacies in Kerala.
+    </p>
+
+    <-- Health Information Section 
+    <div class="health-grid">
+        <div class="health-card">
+            <h3>Vaccination</h3>
+            <p>Ensure your pets receive timely vaccinations to protect against rabies, parvovirus, and other diseases.</p>
+        </div>
+
+        <div class="health-card">
+            <h3>Nutrition</h3>
+            <p>Provide balanced diet based on age and breed. Avoid harmful foods like chocolate and onions.</p>
+        </div>
+
+        <div class="health-card">
+            <h3>Regular Checkups</h3>
+            <p>Annual vet visits help detect health problems early and improve lifespan.</p>
+        </div>
+
+        <div class="health-card">
+            <h3>Emergency Signs</h3>
+            <p>Seek immediate help if your pet shows breathing difficulty, seizures, or severe injuries.</p>
+        </div>
+    </div>
+
+    <-- Services Card --
+    <div class="services-card">
+        <h2>Find Vet & Pharmacy Near You</h2>
+        <p>Click below to open real Government Veterinary Hospitals and nearby Pharmacies in Google Maps.</p>
+
+        <a href="https://www.google.com/maps/search/?api=1&query=Government+Veterinary+Hospital+Kerala" 
+           target="_blank" class="btn vet-btn">
+           🏥 Find Govt Veterinary Hospitals
+        </a>
+
+        <a href="https://www.google.com/maps/search/?api=1&query=Pharmacy+near+me+Kerala" 
+           target="_blank" class="btn pharmacy-btn">
+           💊 Find Nearby Pharmacies
+        </a>
+    </div>
+
+    <footer>
+        © 2026 FurrEver | Pet Health & Support Services
+    </footer>
+
+</div>
+
+</body>
+</html>-->
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Pet Health & Services | FurrEver</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(to right, #f8fbff, #eef5ff);
+        }
+
+        .container {
+            width: 90%;
+            max-width: 1100px;
+            margin: auto;
+            padding: 50px 0;
+        }
+
+        /* HERO SECTION */
+        .hero {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        .hero img {
+            width: 100%;
+            max-height: 380px;
+            object-fit: cover;
+            border-radius: 20px;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.08);
+            margin-bottom: 30px;
+        }
+
+        .hero h1 {
+            font-size: 36px;
+            margin-bottom: 15px;
+        }
+
+        .hero p {
+            max-width: 750px;
+            margin: auto;
+            color: #555;
+            line-height: 1.6;
+        }
+        /* HERO FLEX LAYOUT */
+.hero-section {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 40px;
+    margin-bottom: 60px;
+    flex-wrap: wrap;
+}
+
+.hero-left img {
+    width: 100%;
+    max-width: 550px;
+    border-radius: 20px;
+    box-shadow: 0 15px 30px rgba(0,0,0,0.08);
+}
+
+.hero-right {
+    max-width: 450px;
+}
+
+.hero-right h1 {
+    font-size: 34px;
+    margin-bottom: 15px;
+}
+
+.subtitle {
+    color: #555;
+    margin-bottom: 25px;
+    line-height: 1.6;
+}
+
+/* QUOTE BOX */
+.quote {
+    background: linear-gradient(135deg, #626cf9, #511ee8);
+    color: white;
+    padding: 25px;
+    border-radius: 15px;
+    font-size: 18px;
+    font-weight: 500;
+    line-height: 1.6;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+}
+
+
+        /* ===== HEALTH GRID ===== */
+        .health-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 25px;
+            margin-bottom: 60px;
+        }
+
+        .health-card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+            transition: 0.3s ease;
+            border-left: 5px solid #007bff;
+        }
+
+        .health-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 25px rgba(0,0,0,0.08);
+        }
+
+        .health-card h3 {
+            margin-bottom: 10px;
+            font-size: 18px;
+            color: #333;
+        }
+
+        .health-card p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .health-card h3 {
+            margin-bottom: 10px;
+        }
+
+        .health-card p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        /* SECTION IMAGE */
+        .section-image {
+            text-align: center;
+            margin: 60px 0;
+        }
+
+        .section-image img {
+            width: 100%;
+            max-width: 600px;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+        }
+
+        /* SERVICES CARD */
+        .services-card {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.06);
+            text-align: center;
+            margin-top: 40px;
+        }
+
+        .services-card h2 {
+            margin-bottom: 15px;
+        }
+
+        .services-card p {
+            color: #555;
+            margin-bottom: 25px;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 14px 25px;
+            margin: 10px;
+            border-radius: 10px;
+            text-decoration: none;
+            color: white;
+            font-weight: 600;
+            transition: 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .vet-btn {
+            background: linear-gradient(135deg, #28a745, #20c997);
+        }
+
+        .pharmacy-btn {
+            background: linear-gradient(135deg, #007bff, #6610f2);
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 60px;
+            color: #777;
+            font-size: 13px;
+        }
+
+        @media(max-width: 600px) {
+            .hero h1 {
+                font-size: 28px;
+            }
+        }
+
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <!-- HERO -->
+    <!-- HERO SECTION -->
+<div class="hero-section">
+
+    <div class="hero-left">
+        <!--img src="https://images.unsplash.com/photo-1558788353-f76d92427f16" alt="Happy Dogs">-->
+                <img src="https://images.unsplash.com/photo-1548199973-03cce0bbc87b" alt="Cute Cat and Dog">
+    </div>
+
+    <div class="hero-right">
+        <div class="quote-box">
+            <h1> PawCare🐾</h1>
+            <p class="subtitle">Pet Health & Services</p>
+            <div class="quote">
+                “A healthy pet is a happy pet. 
+                Prevention today ensures wagging tails tomorrow.”
+            </div>
+            <p class="subtitle">
+                Keep your pets healthy and happy. Learn preventive care tips and 
+                find Government Veterinary Hospitals and Pharmacies across Kerala.
+            </p>
+
+            
+        </div>
+    </div>
+
+</div>
+
+
+    <!-- HEALTH INFO -->
+    <div class="health-grid">
+        <div class="health-card">
+            <h3>💉 Vaccination</h3>
+            <p>Protect pets from rabies and other serious diseases with timely vaccination.</p>
+        </div>
+
+        <div class="health-card">
+            <h3>🥗 Nutrition</h3>
+            <p>Provide a balanced and breed-appropriate diet for long-term health.</p>
+        </div>
+
+        <div class="health-card">
+            <h3>🩺 Regular Checkups</h3>
+            <p>Routine vet visits help detect issues early and improve lifespan.</p>
+        </div>
+
+        <div class="health-card">
+            <h3>🚨 Emergency Signs</h3>
+            <p>Seek help immediately if your pet shows breathing difficulty or severe injury.</p>
+        </div>
+    </div>
+
+    
+
+    <!-- SERVICES -->
+    <div class="services-card">
+        <h2>Find Vet & Pharmacy Near You</h2>
+        <p>Open verified Government Veterinary Hospitals and Pharmacies in Google Maps.</p>
+
+        <a href="https://www.google.com/maps/search/?api=1&query=Government+Veterinary+Hospital+Kerala" 
+           target="_blank" class="btn vet-btn">
+            Find Govt Veterinary Hospitals
+        </a>
+
+        <a href="https://www.google.com/maps/search/?api=1&query=Pharmacy+near+me+Kerala" 
+           target="_blank" class="btn pharmacy-btn">
+            Find Nearby Pharmacies
+        </a>
+    </div>
+
+    <footer>
+        © 2026 FurrEver | Pet Health & Support Services
+    </footer>
+
+</div>
+
+</body>
+</html>
