@@ -14,8 +14,8 @@ import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
-EMAIL_ADDRESS = "furrever.abuse.reports@gmail.com"
-EMAIL_PASSWORD = "tijf mlxs bqjv srpd" 
+EMAIL_ADDRESS = os.getenv("EMAIL_ADDRESS ")
+EMAIL_PASSWORD =  os.getenv("EMAIL_PASSWORD ")
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
 
 def allowed_file(filename):
@@ -74,17 +74,12 @@ os.makedirs(app.config["PROFILE_PIC_FOLDER"], exist_ok=True)
 
 
 # -------- DATABASE CONNECTION --------
-#db = mysql.connector.connect(
-   # host="localhost",
-  #  user="root",
- #   password="Admin@123",      # put your MySQL password if any
-#    database="pawcare_db"
-#)
+
 def get_db():
     return mysql.connector.connect(
         host="localhost",
         user="root",
-        password="Admin@123",
+        password = os.getenv("DB_PASSWORD"),
         database="pawcare_db",
         autocommit=True
     )
