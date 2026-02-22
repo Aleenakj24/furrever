@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -62,12 +64,12 @@
     <!-- FORM START -->
     <form method="POST" action="/pet-match">
 
-        <label>Home Type</label>
-        <select name="home" required>
-            <option value="">Select</option>
-            <option value="apartment">Apartment</option>
-            <option value="house">House</option>
-        </select>
+       <label>Type of Home:</label>
+<select name="home" required>
+    <option value="Apartment">Apartment</option>
+    <option value="Independent House">Independent House</option>
+    <option value="Farm / Large Property">Farm / Large Property</option>
+</select>
 
         <label>Pet Experience</label>
         <select name="experience" required>
@@ -83,6 +85,27 @@
             <option value="high">High</option>
         </select>
 
+        <label>Preferred Activity Level:</label>
+<select name="activity_level">
+    <option value="Low">Low (Calm pet)</option>
+    <option value="Medium">Medium</option>
+    <option value="High">High (Very active pet)</option>
+</select>
+
+<label>How much grooming can you manage?</label>
+<select name="grooming">
+    <option value="Low">Low maintenance</option>
+    <option value="Moderate">Moderate</option>
+    <option value="High">High grooming okay</option>
+</select>
+
+<label>Do you already have pets?</label>
+<select name="other_pets">
+    <option value="No">No</option>
+    <option value="Yes - Dog">Yes - Dog</option>
+    <option value="Yes - Cat">Yes - Cat</option>
+    <option value="Yes - Other">Yes - Other</option>
+</select>
         <!-- IMPORTANT -->
         <button type="submit">Find Best Match</button>
 

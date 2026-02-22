@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -8,7 +10,7 @@
             margin: 0;
             font-family: "Segoe UI", Tahoma, sans-serif;
             background: linear-gradient(135deg, #bdf5eb, #acb6e5);
-            height: 100vh;
+            min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -16,17 +18,11 @@
 
         .result-card {
             background: white;
-            width: 420px;
+            width: 520px;
             padding: 30px;
             border-radius: 15px;
             text-align: center;
             box-shadow: 0 10px 30px rgba(0,0,0,0.25);
-            animation: fadeIn 0.6s ease-in-out;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
         }
 
         .icon {
@@ -36,22 +32,42 @@
 
         h1 {
             color: #2c3e50;
-            margin-bottom: 10px;
         }
 
         p {
             font-size: 18px;
             color: #555;
-            margin: 15px 0;
+            margin: 10px 0;
         }
 
-        .highlight {
+        .highlight-box {
             background: #f1f8ff;
             padding: 15px;
             border-radius: 10px;
             font-weight: bold;
             color: #2980b9;
-            margin: 20px 0;
+            margin: 15px 0;
+            font-size: 20px;
+        }
+
+        .status-available {
+            color: #27ae60;
+            font-weight: bold;
+        }
+
+        .status-unavailable {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+
+        ul {
+            text-align: left;
+            padding-left: 20px;
+            margin-top: 15px;
+        }
+
+        li {
+            margin-bottom: 8px;
         }
 
         .buttons {
@@ -86,45 +102,47 @@
 
 <div class="result-card">
     <div class="icon">🐾</div>
+
     <h1>Your Perfect Pet Match</h1>
 
     <p>Based on your lifestyle and preferences, we recommend:</p>
 
-    <!--div class="highlight">
-        {{ result }}
-    </div>-->
-    <div class="highlight">
-        {{ pet_type }}
+    <div class="highlight-box">
+        Pet Type: {{ pet_type }} <br>
+        Breed: {{ breed }}
     </div>
 
-    {% if pets %}
-    <h3>Available {{ pet_type }}s for Adoption</h3>
-    <ul style="text-align:left;">
-        {% for pet in pets %}
-            <li>
-                <strong>{{ pet.name }}</strong> – {{ pet.age }} years – {{ pet.breed }}
-            </li>
-        {% endfor %}
-    </ul>
-    {% else %}
-        <!--p>No {{ pet_type }}s available right now.</p>-->
-        {% if pet_type %}
-            <p>No {{ pet_type }}s available right now.</p>
-        {% else %}
-            <p>No pets available right now.</p>
-        {% endif %}
+    {% if status == "Available" %}
+        <p class="status-available">✔ {{ status }}</p>
 
+        <h3>Available {{ pet_type }} - {{ breed }} for Adoption</h3>
+
+        <ul>
+            {% for pet in pets %}
+                <li>
+                    <strong>{{ pet.name }}</strong> –
+                    {{ pet.age }} years –
+                    {{ pet.type }} –
+                    {{ pet.breed }}
+                </li>
+            {% endfor %}
+        </ul>
+
+    {% elif status == "Currently Unavailable" %}
+        <p class="status-unavailable">
+            ✖ Currently not available in our database.
+        </p>
+
+    {% else %}
+        <p class="status-unavailable">
+            ⚠ {{ status }}
+        </p>
     {% endif %}
 
-
-    <p>This pet type suits your home environment and experience level.</p>
-
     <div class="buttons">
-        <!--a href="/adopt" class="adopt-btn">View Available Pets</a>-->
-        <a href="/adopt?type={{ pet_type }}" class="adopt-btn">
-        View Available Pets
+        <a href="/adopt?type={{ pet_type }}&breed={{ breed }}" class="adopt-btn">
+            View Available Pets
         </a>
-
         <a href="/" class="home-btn">Back to Home</a>
     </div>
 </div>

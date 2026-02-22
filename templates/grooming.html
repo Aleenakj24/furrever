@@ -299,8 +299,8 @@ function loadNearbyServices(place = "") {
             return;
         }
 
-        document.getElementById("status").innerText =
-            `✅ ${data.grooming.length} grooming center(s) found`;
+        /*document.getElementById("status").innerText =
+            `✅ ${data.grooming.length} grooming center(s) found`;*/
 
         data.grooming.forEach(p => {
 
@@ -324,7 +324,7 @@ function loadNearbyServices(place = "") {
                     </div>
 
                     <div class="popup-footer">
-                        <button onclick="navigateTo(${p.latitude}, ${p.longitude})">
+                        <button onclick="navigateToShop('${p.name}', '${p.address}')">
                             Get Directions
                         </button>
                     </div>
@@ -337,6 +337,24 @@ function loadNearbyServices(place = "") {
                 .bindPopup(cardHTML);
 
             serviceMarkers.push(marker);
+
+                // ✅ AUTO-REDIRECT MAP TO PINS
+const validPoints = data.grooming.filter(p =>
+    !isNaN(p.latitude) && !isNaN(p.longitude)
+);
+
+if (validPoints.length > 0) {
+    const bounds = L.latLngBounds(
+        validPoints.map(p => [p.latitude, p.longitude])
+    );
+
+    setTimeout(() => {
+        map.invalidateSize();
+        map.fitBounds(bounds, { padding: [50, 50] });
+    }, 200);
+}
+
+
         });
 
     })
@@ -348,11 +366,19 @@ function loadNearbyServices(place = "") {
 }
 
 
-function navigateTo(lat, lon){
+/*function navigateTo(lat, lon){
     window.open(
         `https://www.google.com/maps?q=${lat},${lon}`,
         "_blank"
     );
+}
+*/
+
+function navigateToShop(shopName, address = "") {
+    const query = `${shopName} ${address}`.trim();
+    const url =
+      `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
+    window.open(url, "_blank");
 }
 
 
