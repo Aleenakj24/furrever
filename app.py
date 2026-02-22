@@ -73,8 +73,6 @@ app.config["STORY_UPLOAD_FOLDER"] = os.path.join(app.root_path, "static", "story
 os.makedirs(app.config["STORY_UPLOAD_FOLDER"], exist_ok=True)
 
 
-
-
 # -------- DATABASE CONNECTION --------
 
 def get_db():
@@ -89,7 +87,7 @@ def get_db():
 db=get_db()
 cursor = db.cursor(dictionary=True)
 
-# -------- HOME PAGE --------
+# -------- ---------HOME PAGE -----------------------------
 @app.route('/')
 def home():
     db = get_db()
@@ -98,13 +96,12 @@ def home():
     pets = cursor.fetchall()
     return render_template("index.html", pets=pets)
 
-# -------- ADD PET PAGE --------
+# ------------------- ADD PET PAGE ----------------------------------
 @app.route('/add-pet', methods=['GET', 'POST'])
 def add_pet():
     if request.method == 'POST':
         db = get_db()
         cursor = db.cursor()
-
         name = request.form['name']
         age = request.form['age']
         pet_type = request.form['type']
@@ -115,7 +112,6 @@ def add_pet():
         contact = request.form['contact']
         email = request.form['email']
         location = request.form['location']
-
         image = request.files['image']
         filename = secure_filename(image.filename)
         image.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
@@ -139,7 +135,7 @@ def add_pet():
 
     return render_template('add_pet.html')
 
-# -------- ADOPT PAGE --------
+# ----------------------- ADOPT PAGE ---------------------------------------
 @app.route('/adopt')
 def adopt():
     db = get_db()
@@ -158,25 +154,22 @@ def adopt():
     pets = cursor.fetchall()
     return render_template("adopt.html", pets=pets, pet_type=pet_type)
 
-# -------- PET DETAILS PAGE --------
+# -------------------- PET DETAILS PAGE ----------------------------------------
 
 @app.route('/pet/<int:pet_id>')
 def pet_details(pet_id):
     db = get_db()
     cursor = db.cursor(dictionary=True)
-
     cursor.execute("SELECT * FROM pets WHERE id = %s", (pet_id,))
     pet = cursor.fetchone()
-
     cursor.close()
     db.close()
-
     if not pet:
         return "Pet not found", 404
 
     return render_template("pet_details.html", pet=pet)
 
-# -------- REPORT ABUSE PAGE --------
+# ------------------- REPORT ABUSE PAGE ---------------------------------------------
 
 @app.route("/report-abuse", methods=["GET", "POST"])
 def report_abuse():
@@ -185,16 +178,13 @@ def report_abuse():
         location = request.form["location"]
         date = request.form["date"]
         description = request.form["description"]
-
         evidence = request.files["evidence"]
         filename = None
-
         if evidence and evidence.filename != "":
             filename = secure_filename(evidence.filename)
             evidence.save(os.path.join(app.config["UPLOAD_FOLDER"], filename))
 
         cursor = db.cursor()
-
         cursor.execute("""
             INSERT INTO abuse_reports
             (abuse_type, location, incident_date, description, evidence)
@@ -204,16 +194,13 @@ def report_abuse():
         db.commit()
 
         send_abuse_email(abuse_type, location, date, description)
-
-
         cursor.close()
-
         return render_template("abuse_success.html")
 
 
     return render_template("report.html")
 
-
+#----------------------------chatbot--------------------------------
 
 @app.route('/chatbot')
 def chatbot():
@@ -283,6 +270,7 @@ def ask_gemini_petcare(question, pet_type=None, pet_age=None):
     except Exception as e:
         return f"Sorry, API call failed. Please try again."
 
+#----------------------------chatbot--------------------------------
 
 @app.route("/chat", methods=["POST"])
 def chat():
@@ -327,9 +315,8 @@ def chat():
 
     return jsonify({"reply": reply})
 
-# -------- PET MATCH PAGE --------
 
-
+# ------------------- AI INTEGRATION FUNCTION-PET MATCH PAGE -------------------------------------------------
 
 def ask_gemini_petcare(prompt):
     url = f"https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash-lite:generateContent?key={API_KEY}"
@@ -356,7 +343,7 @@ def ask_gemini_petcare(prompt):
 
     return data["candidates"][0]["content"]["parts"][0]["text"]
 
-
+#-------------------PET MATCH PAGE---------------------------------------------------
 @app.route("/pet-match", methods=["GET", "POST"])
 def pet_match():
     if request.method == "POST":
@@ -452,18 +439,12 @@ Breed:
 
     return render_template("pet_match.html")
 
-
-
-
-# -------- PAW-GRAM (SOCIAL FEED) --------
+# ---------------- PAW-GRAM (SOCIAL FEED) --------------------------------------------------
 
 @app.route("/paw-gram", methods=["GET", "POST"])
 def paw_gram():
     db = get_db()
     cursor = db.cursor(dictionary=True)
-
-    # TEMP logged-in user
-    #session["user_id"] = 1
     if "user_id" not in session:
         return redirect(url_for("auth"))
 
@@ -502,9 +483,10 @@ def paw_gram():
     SELECT s.*, u.name, u.profile_pic
     FROM stories s
     JOIN users u ON s.user_id = u.id
-    WHERE s.created_at >= NOW() - INTERVAL 15 MINUTE
+    WHERE s.created_at >= NOW() - INTERVAL 15 MINUTE AND 
+    s.user_id != %s
     ORDER BY s.created_at DESC
-    """)
+    """, (user_id,))
     stories = cursor.fetchall()
 
     # FETCH MY LATEST STORY
@@ -514,13 +496,12 @@ def paw_gram():
         FROM stories s
         JOIN users u ON s.user_id = u.id
         WHERE s.user_id = %s
-        AND s.created_at >= NOW() - INTERVAL 1 DAY
+        AND s.created_at >= NOW() - INTERVAL 15 MINUTE
         ORDER BY s.created_at DESC
         LIMIT 1
     """, (user_id,))
     my_story = cursor.fetchone()
 
-    # ======================
     # FETCH CURRENT USER INFO (THIS FIXES YOUR ERROR)
     # ======================
     cursor.execute("""
@@ -529,10 +510,8 @@ def paw_gram():
         WHERE id = %s
     """, (user_id,))
     current_user = cursor.fetchone()
-
     cursor.close()
     db.close()
-
     return render_template(
         "paw-gram.html",
         posts=posts,
@@ -541,12 +520,43 @@ def paw_gram():
         current_user=current_user
     )
 
-    #cursor.close()
-    #db.close()
-    #return render_template("paw-gram.html", posts=posts)
+#----------------FOLLOWERS MODAL POPUP-----------------------------------------
     
+@app.route("/get-followers/<int:user_id>")
+def get_followers(user_id):
+    db = get_db()
+    cursor = db.cursor(dictionary=True)
+    cursor.execute("""
+        SELECT users.id, users.name, users.profile_pic
+        FROM paw_followers
+        JOIN users ON paw_followers.follower_id = users.id
+        WHERE paw_followers.following_id = %s
+        ORDER BY users.name ASC
+    """, (user_id,))
+    users = cursor.fetchall()
+    cursor.close()
+    db.close()
+    return jsonify(users)
 
+#----------------FOLLOWING MODAL POPUP-----------------------------------------
 
+@app.route("/get-following/<int:user_id>")
+def get_following(user_id):
+    db = get_db()
+    cursor = db.cursor(dictionary=True)
+    cursor.execute("""
+        SELECT users.id, users.name, users.profile_pic
+        FROM paw_followers
+        JOIN users ON paw_followers.following_id = users.id
+        WHERE paw_followers.follower_id = %s
+        ORDER BY users.name ASC
+    """, (user_id,))
+    users = cursor.fetchall()
+    cursor.close()
+    db.close()
+    return jsonify(users)
+
+#----------------LOGIN/SIGNUP PAGE-----------------------------------------------------------------
 
 @app.route("/auth", methods=["GET", "POST"])
 def auth():
@@ -582,10 +592,7 @@ def auth():
         elif action == "login":
             #remember = request.form.get("remember")
             remember = request.form.get("remember") == "on"
-            
-
             cursor.execute("SELECT * FROM users WHERE email=%s", (email,))
-
             user = cursor.fetchone()
             if user and check_password_hash(user["password_hash"], password):
                 #session.permanent = True if remember else False
@@ -603,13 +610,14 @@ def auth():
     db.close()
     return render_template("auth.html", error=error)
 
+#-----------------LOGOUT PAGE---------------------------------------------------------------
+
 @app.route("/logout")
 def logout():
     session.clear()
     return redirect(url_for("auth"))
 
-
-
+#----------------PROFILE PAGE-----------------------------------------------------------
 
 @app.route("/profile/<username>")
 def profile(username):
@@ -656,17 +664,13 @@ def profile(username):
     )
     user["is_following"] = cursor.fetchone() is not None
 
-    
-
-
-
     return render_template(
         "profile.html",
         user=user,
         posts=posts
     )
 
-#like post
+#-------------------like post-----------------------------------------------------------------------
 
 @app.route("/like-post", methods=["POST"])
 def like_post():
@@ -676,7 +680,6 @@ def like_post():
     data = request.get_json()
     post_id = data["post_id"]
     user_id = session["user_id"]
-
     db = get_db()
     cursor = db.cursor()
 
@@ -705,22 +708,20 @@ def like_post():
         (post_id,)
     )
     count = cursor.fetchone()[0]
-
     return jsonify({"status": action, "likes": count})
 
 
-#get likes
+#------------------get likes------------------------------------------------------------------------
+
 @app.route("/get-likes/<int:post_id>")
 def get_likes(post_id):
     db = get_db()
     cursor = db.cursor()
-
     cursor.execute(
         "SELECT COUNT(*) FROM paw_likes WHERE post_id=%s",
         (post_id,)
     )
     count = cursor.fetchone()[0]
-
     cursor.execute(
         "SELECT 1 FROM paw_likes WHERE post_id=%s AND user_id=%s",
         (post_id, session.get("user_id", 0))
@@ -729,6 +730,7 @@ def get_likes(post_id):
 
     return jsonify({"likes": count, "liked": liked})
 
+#--------------------get comments--------------------------------------------
 
 @app.route("/get-comments/<int:post_id>")
 def get_comments(post_id):
@@ -749,13 +751,10 @@ def get_comments(post_id):
     comments = cursor.fetchall()
     cursor.close()
     db.close()
-
     return jsonify(comments)
 
+#---------------------add comment-------------------------------------------
 
-
-
-#add comment
 @app.route("/add-comment", methods=["POST"])
 def add_comment():
     if "user_id" not in session:
@@ -765,7 +764,6 @@ def add_comment():
     post_id = data["post_id"]
     text = data["comment"]   # frontend still sends "comment"
     user_id = session["user_id"]
-
     db = get_db()
     cursor = db.cursor()
 
@@ -777,10 +775,9 @@ def add_comment():
     db.commit()
     cursor.close()
     db.close()
-
     return jsonify({"success": True})
 
-
+#----------------------edit-profile-----------------------------------------------
 
 @app.route("/edit-profile", methods=["GET", "POST"])
 def edit_profile():
@@ -790,7 +787,6 @@ def edit_profile():
     cursor = db.cursor(dictionary=True)
     cursor.execute("SELECT * FROM users WHERE id=%s", (session["user_id"],))
     user = cursor.fetchone()
-
     if request.method == "POST":
         name = request.form["name"]
         bio = request.form["bio"]
@@ -816,6 +812,8 @@ def edit_profile():
     return render_template("edit_profile.html", user=user)
 
 
+#----------------delete-post----------------------------------------------------------
+
 @app.route("/delete-post/<int:post_id>", methods=["POST"])
 def delete_post(post_id):
     if "user_id" not in session:
@@ -825,7 +823,7 @@ def delete_post(post_id):
     db = get_db()
     cursor = db.cursor()
 
-    # 🔒 only allow deleting own post
+    # only allow deleting own post
     cursor.execute(
         "SELECT image FROM paw_posts WHERE id=%s AND user_id=%s",
         (post_id, user_id)
@@ -848,7 +846,8 @@ def delete_post(post_id):
     db.commit()
     return jsonify({"success": True})
 
-#paw_feed page
+#------------paw_feed page-------------------------------------------------------------
+
 @app.route("/paw-feed")
 def paw_feed():
     db = get_db()
@@ -869,6 +868,7 @@ def paw_feed():
 
     return render_template("paw_feed.html", posts=posts)
 
+#---------------follow----------------------------------------------------------------
 
 @app.route("/toggle-follow", methods=["POST"])
 def toggle_follow():
@@ -920,6 +920,8 @@ def toggle_follow():
         "followers": followers_count
     })
 
+#----------------------story upload-----------------------------------------------------
+
 @app.route("/upload-story", methods=["POST"])
 def upload_story():
     if "user_id" not in session:
@@ -929,11 +931,8 @@ def upload_story():
     cursor = db.cursor()
 
     image = request.files.get("image")
-
     if image and image.filename:
         filename = secure_filename(image.filename)
-
-        # 🔥 ABSOLUTE SAFE PATH
         upload_folder = os.path.join(app.root_path, "static", "story_uploads")
 
         # Create folder if missing
@@ -956,20 +955,20 @@ def upload_story():
 
     return redirect(url_for("paw_gram"))
 
-#grooming page
+#-------------grooming page----------------------------------------------------
+
 @app.route('/grooming')
 def grooming():
     return render_template('grooming.html')
 
-#shelter map page
+#----------shelter map page------------------------------------------------------------
+
 @app.route("/get-map-data")
 def get_map_data():
 
     city=request.args.get("city")
-
     db=get_db()
     cursor=db.cursor(dictionary=True)
-
     if city:
         cursor.execute(
           "SELECT * FROM shelters WHERE city LIKE %s",
@@ -982,17 +981,13 @@ def get_map_data():
 
     return jsonify({"shelters":shelters})
 
-
-# -------- GROOMING MAP DATA --------
-# -------- GROOMING MAP DATA --------
+# ---------------------- GROOMING MAP DATA ---------------------------------------
 @app.route("/get-grooming-data")
 def get_grooming_data():
 
     place = request.args.get("place", "").strip().lower()
-
     db = get_db()
     cursor = db.cursor(dictionary=True)
-
     if place:
         query = """
             SELECT * FROM grooming_centers
@@ -1008,7 +1003,7 @@ def get_grooming_data():
 
     return jsonify({"grooming": grooming})
 
-
+#---------------health services page-------------------------------------------
 
 @app.route("/health-services")
 def health_services():
@@ -1018,7 +1013,6 @@ def health_services():
 def get_health_services():
 
     place = request.args.get("place", "").lower()
-
     db = get_db()
     cursor = db.cursor(dictionary=True)
 
@@ -1049,8 +1043,6 @@ def get_health_services():
     services = vets + pharmacies
 
     return jsonify({"services": services})
-
-
 
 # -------- RUN SERVER --------
 if __name__ == '__main__':

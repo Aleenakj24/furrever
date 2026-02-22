@@ -1,153 +1,187 @@
-
-<!--!DOCTYPE html>
-<html>
-<head>
-  <title>{{ user.name }} | Paw-Gram</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='profile.css') }}">
-</head>
-
-<body>-->
-
 {% extends "base.html" %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='profile.css') }}">
+<style>
+/* FOLLOW MODAL */
+.follow-modal {
+  display: none;
+  position: fixed;
+  top:0; left:0;
+  width:100%; height:100%;
+  background: rgba(0,0,0,0.6);
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+.follow-modal-content {
+  background: white;
+  border-radius:10px;
+  padding: 20px;
+  width: 300px;
+  max-height: 400px;
+  overflow-y: auto;
+}
+.follow-user {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 0;
+  cursor: pointer;
+}
+.follow-user img {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+}
+
+/* POST MODAL */
+.post-modal {
+  display: none;
+  position: fixed;
+  top:0; left:0;
+  width:100%; height:100%;
+  background: rgba(0,0,0,0.6);
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+.post-modal-content {
+  background: white;
+  border-radius: 10px;
+  padding: 20px;
+  max-width: 800px;
+  width: 90%;
+  display: flex;
+  gap: 20px;
+}
+.modal-left img {
+  max-width: 100%;
+  max-height: 400px;
+  display: block;
+}
+.modal-icons span {
+  margin-right: 10px;
+  cursor: pointer;
+}
+.comment {
+  display: flex;
+  gap: 10px;
+  margin: 5px 0;
+}
+.comment-pic {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+}
+.modal-right {
+  flex:1;
+  display: flex;
+  flex-direction: column;
+}
+</style>
 {% endblock %}
 
 {% block content %}
-
 <div class="profile-container">
 
-   <!-- USERNAME ROW -->
   <div class="username-row">
     <h2>{{ user.name }}</h2>
   </div>
+
   <div class="profile-header">
+    {% if user.profile_pic %}
+      <img src="{{ url_for('static', filename='profile_pics/' ~ user.profile_pic) }}" class="profile-pic">
+    {% endif %}
 
-  <!-- PROFILE PIC 
-  <img src="{{ url_for('static', filename='uploads/' ~ user.profile_pic) }}"
-       class="profile-pic">
-       <img src="{{ url_for('static', filename='profile_pics/' ~ (user.profile_pic or 'default-user.png')) }}"
-     class="profile-pic">-->
-     {% if user.profile_pic %}
-  <img src="{{ url_for('static', filename='profile_pics/' ~ user.profile_pic) }}" 
-  class="profile-pic">
-{% endif %}
+    <div class="profile-info">
+      <!-- Stats -->
+      <div class="stats-row">
+        <span><b>{{ posts|length }}</b><br>posts</span>
+        <span style="cursor:pointer" onclick="openFollowModal('followers','{{ user.id }}')">
+          <b id="followersCount">{{ user.followers_count or 0 }}</b><br>followers
+        </span>
+        <span style="cursor:pointer" onclick="openFollowModal('following','{{ user.id }}')">
+          <b id="followingCount">{{ user.following_count or 0 }}</b><br>following
+        </span>
+      </div>
 
+      <!-- Bio -->
+      <div class="bio-row">
+        {{ user.bio or "No bio yet 🐾" }}
+      </div>
 
-
-  <!-- RIGHT SIDE -->
-  <div class="profile-info">
-
-    <!-- ROW 1 : STATS -->
-    <div class="stats-row">
-      <span><b>{{ posts|length }}</b><br>posts</span>
-      <span><b>{{ user.followers_count or 0 }}</b><br>followers</span>
-      <span><b>{{ user.following_count or 0 }}</b><br>following</span>
+      <!-- Buttons -->
+      <div class="action-row">
+        {% if session['user_id'] == user.id %}
+          <a href="/edit-profile" class="edit-btn">Edit Profile</a>
+          <button class="share-btn">Share Profile</button>
+        {% endif %}
+      </div>
     </div>
-
-    <!-- ROW 2 : BIO -->
-    <div class="bio-row">
-      {{ user.bio or "No bio yet 🐾" }}
-    </div>
-
-    <!-- ROW 3 : BUTTONS -->
-    <div class="action-row">
-      {% if session['user_id'] == user.id %}
-        <a href="/edit-profile" class="edit-btn">Edit Profile</a>
-        <button class="share-btn">Share Profile</button>
-      {% endif %}
-    </div>
-
-  </div>
-</div>
-
-
-    
-     
-
   </div>
 
+  <!-- POSTS GRID -->
   <div class="profile-grid">
-  {% for post in posts %}
-    <div class="grid-item"
-         data-id="{{ post.id }}"
-         data-user-id="{{ post.user_id }}"
-         data-image="{{ url_for('static', filename='uploads/' + post.image) }}"
-         data-caption="{{ post.caption }}"
-        data-username="{{ post.name }}" >
-      <img src="{{ url_for('static', filename='uploads/' + post.image) }}">
-    </div>
-  {% endfor %}
+    {% for post in posts %}
+      <div class="grid-item"
+           data-id="{{ post.id }}"
+           data-user-id="{{ post.user_id }}"
+           data-image="{{ url_for('static', filename='uploads/' + post.image) }}"
+           data-caption="{{ post.caption }}"
+           data-username="{{ post.name }}">
+        <img src="{{ url_for('static', filename='uploads/' + post.image) }}">
+      </div>
+    {% endfor %}
   </div>
-</div>
-
-
-
 
 </div>
+
+<!-- POST MODAL -->
 <div class="post-modal" id="postModal" onclick="closePostModal()">
   <div class="post-modal-content" onclick="event.stopPropagation()">
-
+    <!-- Three-dot menu -->
+    <div id="modalMenu" onclick="toggleModalDropdown(event)">⋮</div>
+    <div id="modalDropdown">
+      <button onclick="deletePost()">Delete</button>
+    </div>
+     <!-- Close button -->
     <span class="close-btn" onclick="closePostModal()">✖</span>
 
-    <div class="modal-header">
-  <span class="close-btn" onclick="closePostModal()">✖</span>
-
-  <!-- OWNER MENU -->
-  <div class="post-menu" id="modalMenu" style="display:none;">
-    <span class="menu-icon" onclick="toggleModalMenu()">⋮</span>
-    <div class="menu-dropdown" id="modalDropdown">
-    <div class="delete-btn" onclick="deletePostFromModal()"></div>
-      <button onclick="deletePostFromModal()">Delete</button>
+    <!-- Left image & icons -->
+    <div class="modal-left">
+      <img id="modalImage">
+      <div class="modal-icons">
+        <span id="likeBtn" onclick="toggleLike()">❤️</span>
+        <span id="likeCount">0 likes</span>
+        <span onclick="toggleComments()">💬</span>
+      </div>
+      <div class="post-caption">
+        <b id="postUser">Username</b>
+        <span id="modalCaption">Caption here</span>
+      </div>
     </div>
-  </div>
-  <span class="close-btn" onclick="closePostModal()">✖</span>
-</div>
 
-    <div class="modal-body">
-
-      <!-- LEFT : IMAGE -->
-      <div class="modal-left">
-        <img id="modalImage">
-
-        <div class="modal-icons">
-          <span id="likeBtn" onclick="toggleLike()">❤️</span>
-          <span id="likeCount">0 likes</span>
-          <span onclick="toggleComments()">💬</span>
-          <span onclick="sharePost()">📤</span>
-          
-        </div>
-        <!-- USERNAME + CAPTION -->
-        <div class="post-caption">
-          <b id="postUser">Username</b>
-          <span id="modalCaption">This is the caption of the post.</span>
-        </div>
+    <div class="modal-right" id="commentsPanel" style="display:none;">
+      <h4>Comments</h4>
+      <div id="feedCommentsList"></div>
+      <div class="add-comment" style="margin-top:10px;">
+        <input type="text" id="commentInput" placeholder="Add a comment…" />
+        <button onclick="addComment()">Post</button>
       </div>
-
-        <p id="modalCaption"></p>
-      </div>
-
-      
-
-      <!-- RIGHT : COMMENTS -->
-      <div class="modal-right" id="commentsPanel">
-        <h4>Comments</h4>
-
-        <div id="profileCommentsList"></div>
-
-        <div class="add-comment">
-          <input type="text" id="commentInput" placeholder="Add a comment…">
-          <button onclick="addComment()">Post</button>
-        </div>
-      </div>
-
     </div>
+
   </div>
 </div>
 
-
-
+<!-- FOLLOWERS / FOLLOWING MODAL -->
+<div id="followModal" class="follow-modal" onclick="closeFollowModal()">
+  <div class="follow-modal-content" onclick="event.stopPropagation()">
+    <span class="close-btn" onclick="closeFollowModal()">✖</span>
+    <h3 id="modalTitle">Followers</h3>
+    <div id="followList"></div>
+  </div>
+</div>
 
 <script>
 let currentPostId = null;
@@ -161,9 +195,12 @@ const postUserEl = document.getElementById("postUser");
 const likeCountEl = document.getElementById("likeCount");
 const likeBtn = document.getElementById("likeBtn");
 const modalMenu = document.getElementById("modalMenu");
-
+const commentsPanel = document.getElementById("commentsPanel");
+const commentInput = document.getElementById("commentInput");
+const feedCommentsList = document.getElementById("feedCommentsList");
 const loggedInUserId = "{{ session.get('user_id') }}";
 
+// OPEN POST MODAL
 document.querySelectorAll(".grid-item").forEach(item => {
   item.addEventListener("click", () => {
     currentPostId = item.dataset.id;
@@ -173,70 +210,67 @@ document.querySelectorAll(".grid-item").forEach(item => {
     modalCaptionEl.innerText = item.dataset.caption || "";
     postUserEl.innerText = item.dataset.username || "Unknown";
 
-    /* ✅ SHOW DELETE ONLY FOR OWNER */
-    if (postOwnerId == loggedInUserId) {
-      modalMenu.style.display = "block";
-    } else {
-      modalMenu.style.display = "none";
-    }
-    
-    loadLikes();
-    loadComments();
+    // Hide comments initially
+    commentsPanel.style.display = "none";
+    commentInput.value = "";
+    commentsOpen = false;
+
     modal.style.display = "flex";
+
+    loadLikes();
   });
 });
 
-/* MENU */
-function toggleModalMenu() {
-  const menu = document.getElementById("modalDropdown");
-  menu.style.display = menu.style.display === "block" ? "none" : "block";
+// TOGGLE COMMENTS
+function toggleComments() {
+  if (!currentPostId) return;
+  commentsOpen = !commentsOpen;
+  if (commentsOpen) {
+    commentsPanel.style.display = "flex";
+    loadComments();
+  } else {
+    commentsPanel.style.display = "none";
+  }
 }
 
-
-document.addEventListener("click", e => {
-  if (!e.target.closest("#modalMenu")) {
-    document.getElementById("modalDropdown").style.display = "none";
-  }
-});
-
-
-/* DELETE */
-function deletePostFromModal() {
-  if (!confirm("Delete this post?")) return;
-
-  fetch(`/delete-post/${currentPostId}`, { method: "POST" })
+// LOAD COMMENTS
+function loadComments() {
+  fetch(`/get-comments/${currentPostId}`)
     .then(res => res.json())
-    .then(data => {
-      if (data.success) {
-
-        // 🔥 remove from grid instantly
-        document.querySelector(
-          `.grid-item[data-id="${currentPostId}"]`
-        )?.remove();
-
-        closePostModal();
+    .then(comments => {
+      feedCommentsList.innerHTML = "";
+      if (!comments.length) {
+        feedCommentsList.innerHTML = "<p style='color:gray;'>No comments yet</p>";
+        return;
       }
+      comments.forEach(c => {
+        const profilePic = c.profile_pic ? `/static/profile_pics/${c.profile_pic}` : `/static/profile_pics/default-user.png`;
+        const div = document.createElement("div");
+        div.className = "comment";
+        div.innerHTML = `<img src="${profilePic}" class="comment-pic"><div class="comment-text"><strong>${c.name}</strong><span>${c.text}</span></div>`;
+        feedCommentsList.appendChild(div);
+      });
     });
 }
 
+// ADD COMMENT
+function addComment() {
+  const text = commentInput.value.trim();
+  if (!text || !currentPostId) return;
 
-/* CLOSE MODAL */
-function closePostModal() {
-  modal.style.display = "none";
-  document.getElementById("commentsPanel").style.display = "none";
-  commentsOpen = false;
+  fetch("/add-comment", {
+    method: "POST",
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify({ post_id: currentPostId, comment: text })
+  }).then(res => res.json()).then(data => {
+    if (data.success) {
+      commentInput.value = "";
+      loadComments();
+    }
+  });
 }
 
-/* COMMENTS */
-function toggleComments() {
-  const panel = document.getElementById("commentsPanel");
-  commentsOpen = !commentsOpen;
-  panel.style.display = commentsOpen ? "block" : "none";
-  if (commentsOpen) loadComments();
-}
-
-
-/* LIKES */
+// LOAD LIKES
 function loadLikes() {
   fetch(`/get-likes/${currentPostId}`)
     .then(res => res.json())
@@ -246,79 +280,77 @@ function loadLikes() {
     });
 }
 
+// TOGGLE LIKE
 function toggleLike() {
   fetch("/like-post", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
+    method:"POST",
+    headers: {"Content-Type":"application/json"},
     body: JSON.stringify({ post_id: currentPostId })
   })
-  .then(res => res.json())
-  .then(data => {
+  .then(res=>res.json())
+  .then(data=>{
     likeCountEl.innerText = `${data.likes} likes`;
-    likeBtn.innerText = data.status === "liked" ? "❤️" : "🤍";
+    likeBtn.innerText = data.status==="liked"?"❤️":"🤍";
   });
 }
 
-/* COMMENTS 
-function loadComments() {
-  fetch(`/get-comments/${currentPostId}`)
-    .then(res => res.json())
-    .then(comments => {
-      const list = document.getElementById("profileCommentsList");
-      list.innerHTML = "";
-      comments.forEach(c => {
-        list.innerHTML += `<div><b>${c.name}</b> ${c.comment}</div>`;
-      });
-    });
-}*/
+// CLOSE POST MODAL
+function closePostModal() {
+  modal.style.display = "none";
+  commentsPanel.style.display = "none";
+  commentsOpen = false;
+}
 
-function loadComments() {
-  fetch(`/get-comments/${currentPostId}`, {
-    credentials: "same-origin"
-  })
-    .then(res => res.json())
-    .then(comments => {
-      const list = document.getElementById("profileCommentsList");
-      list.innerHTML = "";
+// THREE-DOT DROPDOWN
+function toggleModalDropdown(event) {
+  event.stopPropagation();
+  const dropdown = document.getElementById('modalDropdown');
+  dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+}
+document.addEventListener('click', () => {
+  document.getElementById('modalDropdown').style.display = 'none';
+});
 
-      comments.forEach(c => {
-        const profilePic = c.profile_pic
-          ? `/static/profile_pics/${c.profile_pic}`
-          : `/static/profile_pics/default-user.png`;
-
-        list.innerHTML += `
-          <div class="comment">
-            <img src="${profilePic}" class="comment-pic">
-            <div class="comment-text">
-              <strong>${c.name}</strong>
-              <span>${c.text}</span>
-            </div>
-          </div>
-        `;
-      });
+// DELETE POST
+function deletePost() {
+  if (!currentPostId) return;
+  if (!confirm("Are you sure you want to delete this post?")) return;
+  fetch(`/delete-post/${currentPostId}`, { method: "POST" })
+    .then(res=>res.json())
+    .then(data=>{
+      if(data.success){
+        closePostModal();
+        document.querySelector(`.grid-item[data-id='${currentPostId}']`).remove();
+      } else alert("Failed to delete post.");
     });
 }
 
+// OPEN FOLLOW MODAL
+function openFollowModal(type, userId) {
+  const modal = document.getElementById("followModal");
+  const title = document.getElementById("modalTitle");
+  const list = document.getElementById("followList");
+  title.innerText = type.charAt(0).toUpperCase() + type.slice(1);
+  list.innerHTML = "<p>Loading...</p>";
 
-function addComment() {
-  const input = document.getElementById("commentInput");
-  if (!input.value.trim()) return;
-
-  fetch("/add-comment", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ post_id: currentPostId, comment: input.value })
-  }).then(() => {
-    input.value = "";
-    loadComments();
-  });
+  fetch(`/get-${type}/${userId}`)
+    .then(res => res.json())
+    .then(users=>{
+      list.innerHTML = "";
+      if(!users.length){ list.innerHTML="<p>No users found</p>"; return; }
+      users.forEach(u=>{
+        const div=document.createElement("div");
+        div.className="follow-user";
+        const pic=u.profile_pic?`/static/profile_pics/${u.profile_pic}`:`/static/profile_pics/default-user.png`;
+        div.innerHTML=`<img src="${pic}"><span>${u.name}</span>`;
+        div.addEventListener("click",()=>{window.location.href=`/profile/${u.name}`});
+        list.appendChild(div);
+      });
+    });
+  modal.style.display="flex";
 }
+
+// CLOSE FOLLOW MODAL
+function closeFollowModal(){ document.getElementById("followModal").style.display="none"; }
 </script>
-
-
-
-
-<!--/body>
-</html>-->
 {% endblock %}
- 

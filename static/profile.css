@@ -1,10 +1,8 @@
-
-
-
+/* -------------------- GLOBAL -------------------- */
 body {
   margin: 0;
   font-family: Arial, sans-serif;
-   background-color: rgb(255, 255, 255);
+  background-color: #fff;
 }
 
 .profile-container {
@@ -80,6 +78,7 @@ body {
   border: 1px solid #dbdbdb;
   background: #7eb1ff;
 }
+
 /* USERNAME */
 .username-row h2 {
   font-size: 22px;
@@ -89,96 +88,173 @@ body {
   margin-bottom: 14px;
 }
 
-
-
-
-
 .username-row {
   display: flex;
   align-items: center;
   gap: 20px;
 }
 
-
-
+/* POSTS GRID */
 .profile-grid {
-  /*display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
-  
-  width: 100%;
-  max-width: 900px;
-  margin: 0 auto;*/
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 6px;                 /* Instagram-like spacing */
-          /* grid line color */
-  padding: 6px; 
-  max-width: 935px;         /* Instagram width */
-  margin: 30px auto;        /* Center grid */
+  gap: 6px;
+  max-width: 935px;
+  margin: 30px auto;
   padding: 0 20px;
-  /*border: 3px solid rgb(255, 255, 255);*/
-   grid-auto-rows: 1fr;                  /* equal row height */
-  
-  
+  grid-auto-rows: 1fr;
 }
+
 .grid-item img {
-  
   width: 100%;
-  aspect-ratio: 1 / 1;      /* Makes square posts */
-  overflow: hidden;
+  aspect-ratio: 1/1;
+  object-fit: cover;
+  display: block;
   cursor: pointer;
   background: #fafafa;
-   height: 100%;
-  object-fit: cover;        /* Crops nicely */
-  display: block;
-  top: 0;
-  left: 0;
-   background: white; 
-  
 }
+
 .grid-item img:hover {
   filter: brightness(90%);
   transition: filter 0.3s;
 }
 
-
-/* POST MODAL */
+/* -------------------- POST MODAL -------------------- */
 .post-modal {
   display: none;
   position: fixed;
   inset: 0;
   background: rgba(246, 246, 246, 0.7);
-  display: none;
   align-items: center;
   justify-content: center;
   z-index: 999;
 }
 
 .post-modal-content {
-  background: white;
-  border-radius: 12px;
-  width: 850px;            /* 🔥 IMPORTANT */
+  display: flex;
+  flex-direction: row;       /* left + right side */
+  width: 850px;
   max-width: 95%;
   height: 520px;
+  background: #fff;
+  border-radius: 12px;
+  overflow: hidden;
   position: relative;
-  display: flex;
-  flex-direction: column;
 }
 
+/* LEFT: Post Image and Caption */
+.modal-left {
+  flex: 2;                   /* takes 2/3 of modal */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px;
+  gap: 8px;
+}
 
-.post-modal-content img {
+.modal-left img {
   width: 100%;
+  height: auto;
   max-height: 400px;
-  object-fit: contain;
+  object-fit: cover;
   border-radius: 8px;
 }
 
-.post-modal-content p {
-  margin-top: 10px;
-  color: #333;
+.modal-icons {
+  display: flex;
+  gap: 8px;
+  font-size: 20px;
+  margin-top: 6px;
 }
 
+.post-caption {
+  width: 100%;
+  font-size: 14px;
+  color: #333;
+  margin-top: 6px;
+}
+
+.post-caption b {
+  margin-right: 6px;
+}
+
+/* RIGHT: Comments Panel */
+.modal-right {
+  flex: 1;                     /* takes 1/3 of modal */
+  display: flex;
+  flex-direction: column;
+  border-left: 1px solid #e6e6e6;
+  padding: 12px;
+  background: #fafafa;
+  overflow-y: auto;
+}
+
+/* Comments List */
+.comments-list {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  overflow-y: auto;
+}
+
+/* Single comment */
+.comment {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.comment-pic {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.comment-text {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 14px;
+  color: #333;
+  flex-wrap: wrap;
+}
+
+.comment-text strong { color: #222; font-weight: 600; }
+.comment-text span { color: #444; line-height: 1.2; }
+
+/* Add Comment Input */
+.add-comment {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.add-comment input {
+  flex: 1;
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+}
+
+.add-comment button {
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: none;
+  background: #0095f6;
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.add-comment button:hover {
+  background: #1877f2;
+}
+
+/* CLOSE BUTTON */
 .close-btn {
   position: absolute;
   top: 8px;
@@ -188,172 +264,102 @@ body {
   z-index: 1000;
 }
 
-.modal-actions {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin: 10px 0;
-  font-size: 18px;
-}
-
-#likeBtn {
-  cursor: pointer;
-}
-
-.comments-section {
-  margin-top: 15px;
-  text-align: left;
-}
-
-#commentsList div {
-  margin-bottom: 6px;
-  font-size: 14px;
-}
-
-.add-comment {
-  display: flex;
-  gap: 8px;
-  margin-top: 10px;
-}
-
-
-
-
-.modal-body {
-  display: flex;
-  gap: 15px;
-}
-
-.modal-left {
-  width: 350px;
-}
-
-.modal-left img {
-  width: 100%;
-  border-radius: 8px;
-}
-
-
-.modal-icons {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 20px;
-  margin: 8px 0;
-}
-
-
-.modal-icons span {
-  cursor: pointer;
-}
-
-.modal-right {
-  width: 300px;
-  border-left: 1px solid #ddd;
-  padding-left: 12px;
-  display: none; /* 🔥 hidden by default */
-}
-
-.modal-right h4 {
-  margin-top: 0;
-}
-
-#commentsList div {
-  margin-bottom: 6px;
-  font-size: 14px;
-}
-
-.add-comment {
-  display: flex;
-  gap: 6px;
-  margin-top: 10px;
-}
-
-.comment-pic {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  object-fit: cover;
-}
-
-.add-comment input {
-  flex: 1;
-  padding: 6px;
-}
-
-.post-caption {
-  margin-top: 6px;
-  text-align: left;
-  font-size: 14px;
-  color: #333;
-}
-
-.post-caption b {
-  margin-right: 6px; /* space between username and caption */
-}
-
-
-
-
-/* THREE DOT ICON 
-.menu-icon {
-  font-size: 22px;
-  cursor: pointer;
-  padding: 6px;
-  cursor: pointer; 
-}*/
-.menu-icon {
-  font-size: 22px;
-  cursor: pointer;        /* 👈 THIS */
-  user-select: none;
-  padding: 6px;
-  line-height: 1;
-}
-/* MENU CONTAINER */
-.post-menu {
-  position: relative;
-  margin-right: 12px;
-}
-
-/* DROPDOWN */
-.menu-dropdown {
+/* -------------------- FOLLOW MODAL -------------------- */
+.follow-modal {
   display: none;
-  position: absolute;
-  top: 30px;
-  right: 0;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.6);
+  z-index: 1000;
+  justify-content: center;
+  align-items: center;
+  display: flex;
+}
+
+.follow-modal-content {
   background: white;
+  padding: 20px;
+  border-radius: 10px;
+  width: 300px;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.follow-modal .close-btn {
+    float: right;
+    cursor: pointer;
+    font-size: 18px;
+    margin-bottom: 10px;
+}
+
+.follow-user {
+    display: flex;
+    align-items: center;
+    padding: 5px 0;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.follow-user:hover {
+    background: #f0f0f0;
+    border-radius: 5px;
+    padding-left: 5px;
+}
+
+.follow-user img {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    margin-right: 10px;
+}
+/* THREE DOT MENU (Owner) */
+#modalMenu {
+  position: absolute;
+  top: 12px;
+  left: 12px;           /* left side of modal */
+  z-index: 1001;
+   cursor: pointer;
+}
+
+/* Three-dot dropdown menu container */
+#modalDropdown {
+  position: absolute;
+  top: 28px;
+  left: 0;
+  display: none;
+  background: #fff;
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0,0,0,0.15);
   overflow: hidden;
-  z-index: 10;
-  cursor: pointer; 
-}
-
-.menu-dropdown button {
-  background: none;
-  border: none;
-  padding: 10px 16px;
-  width: 100%;
-  text-align: left;
-  cursor: pointer;
-  font-size: 14px;
-  color: red;
+  min-width: 100px;
   
 }
 
-.menu-dropdown button:hover {
-  background: #f5f5f5;
-  cursor: pointer; 
+/* Dropdown buttons */
+#modalDropdown button {
+  background: none;
+  border: none;
+  padding: 8px 12px;
+  width: 100%;
+  text-align: left;
+  font-size: 14px;
+  color: red;
 }
 
+/* Hover effect */
+#modalDropdown button:hover {
+  background: #f5f5f5;
+}
 
-
-
-
-
-
-
-
-
-
-
+/* CLOSE BUTTON (Right side) */
+.post-modal .close-btn {
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  cursor: pointer;
+  font-size: 20px;
+  z-index: 1001;
+}
