@@ -69,6 +69,8 @@ app.config["PROFILE_PIC_FOLDER"] = PROFILE_PIC_FOLDER
 #app.config["PROFILE_PIC_FOLDER"] = os.path.join("static", "profile_pics")
 app.config["PROFILE_PIC_FOLDER"] = os.path.join(app.root_path, "static", "profile_pics")
 os.makedirs(app.config["PROFILE_PIC_FOLDER"], exist_ok=True)
+app.config["STORY_UPLOAD_FOLDER"] = os.path.join(app.root_path, "static", "story_uploads")
+os.makedirs(app.config["STORY_UPLOAD_FOLDER"], exist_ok=True)
 
 
 
@@ -329,132 +331,127 @@ def chat():
 
 
 
-def get_ai_pet_match(home, experience, time, pets):
+def ask_gemini_petcare(prompt):
+    url = f"https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash-lite:generateContent?key={API_KEY}"
 
-    if not pets:
-        return []
-
-    pet_list_text = ""
-    for pet in pets:
-        pet_list_text += f"""
-    ID: {pet['id']} 
-    Name: {pet.get('name', '')}
-    Type: {pet.get('type', '')}
-    Age: {pet.get('age', '')}
-    Temperament: {pet.get('temperament', 'Unknown')}
-    Description: {pet.get('description', 'No description')}
-    ---
-"""
-
-    prompt = f"""
-    You are a pet adoption recommendation engine.
-
-    User Details:
-    Home type: {home}
-    Experience level: {experience}
-    Free time available: {time}
-
-    Available Pets:
-    {pet_list_text}
-
-    Select up to 3 most suitable pets.
-
-    IMPORTANT:
-        - Only return numeric IDs.
-        - Separate them using commas.
-        - If none are suitable, return exactly: NONE
-
-    Example:
-    1,5,8
-
-
-
-    Do not explain anything.
-    Only return the numbers.
-    """
-
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={API_KEY}"
-
-    headers = {
-        "Content-Type": "application/json"
-    }
-
-    data = {
+    payload = {
         "contents": [{
             "parts": [{"text": prompt}]
         }]
     }
 
-    try:
-        response = requests.post(url, headers=headers, json=data)
-        response.raise_for_status()
+    response = requests.post(url, json=payload)
 
-        result = response.json()
+    print("STATUS CODE:", response.status_code)
+    print("RESPONSE:", response.text)
 
-        print("FULL GEMINI RESPONSE:")
-        print(result)
+    if response.status_code != 200:
+        return None
 
-        text = ""
+    data = response.json()
 
-        if "candidates" in result and result["candidates"]:
-            content = result["candidates"][0].get("content", {})
-            parts = content.get("parts", [])
-        if parts and "text" in parts[0]:
-            text = parts[0]["text"]
+    if "error" in data:
+        print("API ERROR:", data["error"])
+        return None
 
-        print("AI RAW OUTPUT:", text)
-
-        if not text:
-            return []
-
-        if "NONE" in text.upper():
-            return []
-
-        ids = [int(num) for num in re.findall(r"\d+", text)]
-
-        print("Extracted IDs:", ids)
-
-        return ids
+    return data["candidates"][0]["content"]["parts"][0]["text"]
 
 
-
-
-    except Exception as e:
-        print("AI Matching Error:", e)
-        return []
-
-
-
-
-@app.route('/pet-match', methods=['GET', 'POST'])
+@app.route("/pet-match", methods=["GET", "POST"])
 def pet_match():
-    if request.method == 'POST':
+    if request.method == "POST":
+        home = request.form.get("home")
+        experience = request.form.get("experience")
+        time = request.form.get("time")
 
-        home = request.form.get('home', '')
-        experience = request.form.get('experience', '')
-        time = request.form.get('time', '')
+        activity= request.form.get("activity-level")
+        grooming = request.form.get("grooming")
 
-        # 1️⃣ Get all pets from DB
+        other_pets = request.form.get("other-pets")
+        prompt = f"""
+User Preferences:
+
+Home: {home}
+
+Other Pets: {other_pets}
+Experience: {experience}
+Time Available: {time}
+Activity Preference: {activity}
+Grooming Level: {grooming}
+
+Suggest the most suitable pet type and breed.
+Return format:
+Pet Type:
+Breed:
+"""
+        ai_response = ask_gemini_petcare(prompt)
+
+        # -------- API FAILED --------
+        if not ai_response:
+            return render_template(
+                "pet_match_result.html",
+                pet_type="Unknown",
+                breed="Unavailable",
+                pets=[],
+                status="AI Service Unavailable"
+            )
+
+        # -------- PARSE AI RESPONSE --------
+        pet_type = ""
+        breed = ""
+
+        lines = ai_response.split("\n")
+
+        for line in lines:
+            if "Pet Type" in line:
+                pet_type = line.split(":")[1].strip()
+            elif "Breed" in line:
+                breed = line.split(":")[1].strip()
+
+        # Safety fallback
+        if not pet_type or not breed:
+            return render_template(
+                "pet_match_result.html",
+                pet_type="Unknown",
+                breed="Unavailable",
+                pets=[],
+                status="Invalid AI Response"
+            )
+
+        # -------- CHECK DATABASE --------
         db = get_db()
         cursor = db.cursor(dictionary=True)
-        cursor.execute("SELECT * FROM pets")
-        all_pets = cursor.fetchall()
 
-        # 2️⃣ Send to AI
-        matched_ids = get_ai_pet_match(home, experience, time, all_pets)
-
-        # 3️⃣ Filter matched pets
-        matched_pets = [
-            pet for pet in all_pets
-            if pet["id"] in matched_ids
-        ]
-
-        return render_template(
-            'pet_match_result.html',
-            pets=matched_pets
+        cursor.execute(
+            """
+            SELECT * FROM pets
+            WHERE LOWER(type) LIKE %s
+            AND LOWER(breed) LIKE %s
+            """,
+            ("%" + pet_type.lower() + "%", "%" + breed.lower() + "%")
         )
 
-    return render_template('pet_match.html')
+        pets = cursor.fetchall()
+
+        cursor.close()
+        db.close()
+
+        # -------- RESULT STATUS --------
+        if pets:
+            status = "Available"
+        else:
+            status = "Currently Unavailable"
+
+        return render_template(
+            "pet_match_result.html",
+            pet_type=pet_type,
+            breed=breed,
+            pets=pets,
+            status=status
+        )
+
+    return render_template("pet_match.html")
+
 
 
 
@@ -472,7 +469,7 @@ def paw_gram():
 
     # Now proceed with real user_id
     user_id = session["user_id"]
-
+    #create post
     if request.method == "POST":
         caption = request.form.get("caption")
         image = request.files.get("image")
@@ -490,7 +487,7 @@ def paw_gram():
         cursor.close()
         db.close()
         return redirect(url_for("paw_gram"))
-
+    #fetch post
     cursor.execute("""
         SELECT paw_posts.id, paw_posts.caption, paw_posts.image,
         paw_posts.created_at, users.name,users.profile_pic
@@ -500,10 +497,54 @@ def paw_gram():
     """)
     posts = cursor.fetchall()
 
+    # FETCH STORIES (last 24 hours)
+    cursor.execute("""
+    SELECT s.*, u.name, u.profile_pic
+    FROM stories s
+    JOIN users u ON s.user_id = u.id
+    WHERE s.created_at >= NOW() - INTERVAL 15 MINUTE
+    ORDER BY s.created_at DESC
+    """)
+    stories = cursor.fetchall()
+
+    # FETCH MY LATEST STORY
+    # =========================
+    cursor.execute("""
+        SELECT s.*, u.name, u.profile_pic
+        FROM stories s
+        JOIN users u ON s.user_id = u.id
+        WHERE s.user_id = %s
+        AND s.created_at >= NOW() - INTERVAL 1 DAY
+        ORDER BY s.created_at DESC
+        LIMIT 1
+    """, (user_id,))
+    my_story = cursor.fetchone()
+
+    # ======================
+    # FETCH CURRENT USER INFO (THIS FIXES YOUR ERROR)
+    # ======================
+    cursor.execute("""
+        SELECT id, name, profile_pic
+        FROM users
+        WHERE id = %s
+    """, (user_id,))
+    current_user = cursor.fetchone()
+
     cursor.close()
     db.close()
 
-    return render_template("paw-gram.html", posts=posts)
+    return render_template(
+        "paw-gram.html",
+        posts=posts,
+        stories=stories,
+        my_story=my_story,
+        current_user=current_user
+    )
+
+    #cursor.close()
+    #db.close()
+    #return render_template("paw-gram.html", posts=posts)
+    
 
 
 
@@ -574,7 +615,7 @@ def logout():
 def profile(username):
     if "user_id" not in session:
         return redirect(url_for("auth"))
-
+    
     cursor = db.cursor(dictionary=True)
 
     # get user info
@@ -593,6 +634,30 @@ def profile(username):
     ORDER BY paw_posts.created_at DESC
 """, (user["id"],))
     posts = cursor.fetchall()
+
+    # Followers count
+    cursor.execute(
+    "SELECT COUNT(*) AS count FROM paw_followers WHERE following_id=%s",
+    (user["id"],)
+    )
+    user["followers_count"] = cursor.fetchone()["count"]
+
+    # Following count
+    cursor.execute(
+    "SELECT COUNT(*) AS count FROM paw_followers WHERE follower_id=%s",
+    (user["id"],)
+    )
+    user["following_count"] = cursor.fetchone()["count"]
+
+    # Check if current user follows this profile
+    cursor.execute(
+        "SELECT id FROM paw_followers WHERE follower_id=%s AND following_id=%s",
+        (session["user_id"], user["id"])
+    )
+    user["is_following"] = cursor.fetchone() is not None
+
+    
+
 
 
     return render_template(
@@ -805,7 +870,91 @@ def paw_feed():
     return render_template("paw_feed.html", posts=posts)
 
 
+@app.route("/toggle-follow", methods=["POST"])
+def toggle_follow():
+    if "user_id" not in session:
+        return jsonify({"error": "login required"}), 401
 
+    data = request.get_json()
+    target_user_id = data["user_id"]
+    current_user_id = session["user_id"]
+
+    if target_user_id == current_user_id:
+        return jsonify({"error": "cannot follow yourself"}), 400
+
+    db = get_db()
+    cursor = db.cursor()
+
+    cursor.execute(
+        "SELECT id FROM paw_followers WHERE follower_id=%s AND following_id=%s",
+        (current_user_id, target_user_id)
+    )
+    existing = cursor.fetchone()
+
+    if existing:
+        cursor.execute(
+            "DELETE FROM paw_followers WHERE follower_id=%s AND following_id=%s",
+            (current_user_id, target_user_id)
+        )
+        status = "unfollowed"
+    else:
+        cursor.execute(
+            "INSERT INTO paw_followers (follower_id, following_id) VALUES (%s,%s)",
+            (current_user_id, target_user_id)
+        )
+        status = "followed"
+
+    db.commit()
+
+    cursor.execute(
+        "SELECT COUNT(*) FROM paw_followers WHERE following_id=%s",
+        (target_user_id,)
+    )
+    followers_count = cursor.fetchone()[0]
+
+    cursor.close()
+    db.close()
+
+    return jsonify({
+        "status": status,
+        "followers": followers_count
+    })
+
+@app.route("/upload-story", methods=["POST"])
+def upload_story():
+    if "user_id" not in session:
+        return redirect(url_for("auth"))
+
+    db = get_db()
+    cursor = db.cursor()
+
+    image = request.files.get("image")
+
+    if image and image.filename:
+        filename = secure_filename(image.filename)
+
+        # 🔥 ABSOLUTE SAFE PATH
+        upload_folder = os.path.join(app.root_path, "static", "story_uploads")
+
+        # Create folder if missing
+        os.makedirs(upload_folder, exist_ok=True)
+
+        save_path = os.path.join(upload_folder, filename)
+
+        image.save(save_path)
+
+        print("Saved to:", save_path)  # DEBUG
+
+        cursor.execute(
+            "INSERT INTO stories (user_id, image) VALUES (%s, %s)",
+            (session["user_id"], filename)
+        )
+        db.commit()
+
+    cursor.close()
+    db.close()
+
+    return redirect(url_for("paw_gram"))
 
 #grooming page
 @app.route('/grooming')
@@ -835,6 +984,7 @@ def get_map_data():
 
 
 # -------- GROOMING MAP DATA --------
+# -------- GROOMING MAP DATA --------
 @app.route("/get-grooming-data")
 def get_grooming_data():
 
@@ -857,6 +1007,7 @@ def get_grooming_data():
     grooming = cursor.fetchall()
 
     return jsonify({"grooming": grooming})
+
 
 
 @app.route("/health-services")
