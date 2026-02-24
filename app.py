@@ -13,37 +13,54 @@ from dotenv import load_dotenv
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+from email.mime.image import MIMEImage
 
-EMAIL_ADDRESS = os.getenv("EMAIL_ADDRESS ")
-EMAIL_PASSWORD =  os.getenv("EMAIL_PASSWORD ")
+
+SENDER_EMAIL =os.getenv("SENDER_EMAIL")  
+SENDER_PASSWORD = os.getenv("EMAIL_PASSWORD")    
+RECEIVER_EMAIL = os.getenv("RECEIVER_EMAIL")         
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-def send_abuse_email(abuse_type, location, date, description):
+
+
+def send_abuse_email(abuse_type, location, date, description, filename=None):
     msg = MIMEMultipart()
-    msg["From"] = EMAIL_ADDRESS
-    msg["To"] = EMAIL_ADDRESS
-    msg["Subject"] = " Animal Abuse Report - FurrEver"
+    msg["From"] = SENDER_EMAIL
+    msg["To"] = RECEIVER_EMAIL
+    msg["Subject"] = "Animal Abuse Report - FurrEver"
+
     body = f"""
-    A new animal abuse report has been submitted.
+A new animal abuse report has been submitted.
 
-    Type of Abuse: {abuse_type}
-    Location: {location}
-    Date: {date}
+Type of Abuse: {abuse_type}
+Location: {location}
+Date: {date}
 
-    Description:
-    {description}
+Description:
+{description}
 
-    Please take appropriate action.
-    """
+Please take appropriate action.
+"""
 
     msg.attach(MIMEText(body, "plain"))
+
+    # ✅ Attach image if available
+    if filename:
+        file_path = os.path.join(app.config["UPLOAD_FOLDER"], filename)
+        with open(file_path, "rb") as img:
+            image = MIMEImage(img.read())
+            image.add_header(
+                "Content-Disposition",
+                f'attachment; filename="{filename}"'
+            )
+            msg.attach(image)
 
     try:
         server = smtplib.SMTP("smtp.gmail.com", 587)
         server.starttls()
-        server.login(EMAIL_ADDRESS, EMAIL_PASSWORD)
+        server.login(SENDER_EMAIL, SENDER_PASSWORD)
         server.send_message(msg)
         server.quit()
         print("Abuse report email sent successfully")
@@ -143,7 +160,7 @@ def adopt():
     cursor.execute("SELECT * FROM pets")
     pets = cursor.fetchall()
     cursor.close()
-    return render_template("adopt.html", pets=pets)
+    return render_template("adopt.html", pets=pets) 
     pet_type = request.args.get('type')
 
     if pet_type:
@@ -193,7 +210,7 @@ def report_abuse():
 
         db.commit()
 
-        send_abuse_email(abuse_type, location, date, description)
+        send_abuse_email(abuse_type, location, date, description, filename)
         cursor.close()
         return render_template("abuse_success.html")
 

@@ -169,105 +169,7 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png')
 
 var serviceMarkers=[];
 
-/* SEARCH 
-function searchLocation(){
 
- let place=document.getElementById("searchBox").value;
-
- fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${place}`)
- .then(res=>res.json())
- .then(data=>{
-
-  if(data.length==0){
-    alert("Location not found");
-    return;
-  }
-
-  let lat=data[0].lat;
-  let lon=data[0].lon;
-
-  // Move map ONLY (no arrow)
-  map.setView([lat,lon],14);
-
-  loadNearbyServices(lat,lon);
- });
-}*/
-
-
-/*function searchLocation(){
-
- let place = document.getElementById("searchBox").value.trim();
-
- if(!place){
-   alert("Please enter a place");
-   return;
- }
-
- fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${place}`)
- .then(res => res.json())
- .then(data => {
-
-  if(data.length === 0){
-    alert("Location not found");
-    return;
-  }
-
-  let lat = parseFloat(data[0].lat);
-  let lon = parseFloat(data[0].lon);
-
-  map.setView([lat, lon], 14);
-  loadNearbyServices(lat, lon);
- });
-}*/
-
-
-/*function loadNearbyServices(lat,lon){
-
- document.getElementById("status").innerText =
-  "Searching nearby grooming services...";
-
- serviceMarkers.forEach(m => map.removeLayer(m));
- serviceMarkers = [];
-
- let query = `
- [out:json];
- (
-  node(around:5000,${lat},${lon})["shop"="pet_grooming"];
-  way(around:5000,${lat},${lon})["shop"="pet_grooming"];
- );
- out center;
- `;
-
- fetch("https://overpass-api.de/api/interpreter",{
-  method:"POST",
-  body:query
- })
- .then(res => res.json())
- .then(data => {
-
-  document.getElementById("status").innerText = "";
-
-  if(data.elements.length === 0){
-    alert("No grooming services found nearby");
-    return;
-  }
-
-  data.elements.forEach(p => {
-
-   let lat = p.lat || p.center.lat;
-   let lon = p.lon || p.center.lon;
-   let name = p.tags.name || "Pet Grooming ✂️";
-
-   let marker = L.marker([lat,lon])
-     .addTo(map)
-     .bindPopup(`<b>${name}</b><br>Pet Grooming`);
-
-   serviceMarkers.push(marker);
-  });
- });
-}
-
-loadNearbyServices(9.9312, 76.2673);*/
 function searchLocation(){
 
  let city = document.getElementById("searchBox").value.trim();
@@ -366,13 +268,7 @@ if (validPoints.length > 0) {
 }
 
 
-/*function navigateTo(lat, lon){
-    window.open(
-        `https://www.google.com/maps?q=${lat},${lon}`,
-        "_blank"
-    );
-}
-*/
+
 
 function navigateToShop(shopName, address = "") {
     const query = `${shopName} ${address}`.trim();

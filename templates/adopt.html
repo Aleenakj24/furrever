@@ -1,356 +1,4 @@
 
-<!--DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Adopt a Pet | FurrEver</title>
-
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
-    <style>
-:root{
-    --primary:#ff7a00;
-    --text-dark:#1f2937;
-    --text-light:#6b7280;
-    --bg:#f4f6f8;
-    --card:#ffffff;
-    --border:#e5e7eb;
-}
-
-*{
-    box-sizing:border-box;
-}
-
-body{
-    margin:0;
-    font-family:'Poppins',sans-serif;
-    background:var(--bg);
-    color:var(--text-dark);
-}
-
-/* PAGE LAYOUT */
-.container{
-    max-width:1200px;
-    margin:auto;
-    padding:40px 20px;
-}
-
-/* TITLE */
-h1{
-    text-align:center;
-    font-size:30px;
-    font-weight:600;
-    margin-bottom:45px;
-    color:var(--text-dark);
-}
-
-/* GRID */
-.pet-grid{
-    display:grid;
-    grid-template-columns:repeat(auto-fill,minmax(300px,1fr));
-    gap:28px;
-}
-
-/* CARD */
-.pet-card{
-    background:var(--card);
-    border:1px solid var(--border);
-    border-radius:14px;
-    overflow:hidden;
-    display:flex;
-    flex-direction:column;
-}
-
-/* IMAGE */
-.pet-card img{
-    width:100%;
-    height:210px;
-    object-fit:cover;
-}
-
-/* CONTENT */
-.pet-info{
-    padding:20px;
-    display:flex;
-    flex-direction:column;
-    gap:6px;
-}
-
-.pet-info h3{
-    margin:0;
-    font-size:18px;
-    font-weight:600;
-}
-
-.type{
-    font-size:14px;
-    font-weight:500;
-    color:var(--primary);
-}
-
-.pet-info p{
-    font-size:14px;
-    color:var(--text-light);
-    margin:2px 0;
-}
-
-/* BUTTON */
-.btn-group{
-    margin-top:14px;
-}
-
-.details-btn{
-    display:inline-block;
-    width:100%;
-    text-align:center;
-    padding:11px;
-    border-radius:8px;
-    background:var(--primary);
-    color:white;
-    font-size:14px;
-    font-weight:500;
-    text-decoration:none;
-}
-
-.details-btn:hover{
-    background:#ff6500;
-}
-
-/* MODAL */
-.modal{
-    display:none;
-    position:fixed;
-    inset:0;
-    background:rgba(0,0,0,.45);
-    justify-content:center;
-    align-items:center;
-    z-index:100;
-}
-
-.modal-content{
-    background:white;
-    width:420px;
-    padding:24px;
-    border-radius:12px;
-}
-
-.modal-content h3{
-    margin-top:0;
-}
-
-.close{
-    float:right;
-    cursor:pointer;
-}
-
-/* MAP SECTION */
-#map{
-    height:450px;
-    width:100%;
-    border-radius:14px;
-    border:1px solid var(--border);
-}
-
-/* MAP WRAPPER */
-.map-wrapper{
-    max-width:1200px;
-    margin:60px auto 0;
-    padding:30px;
-    background:white;
-    border-radius:14px;
-    border:1px solid var(--border);
-}
-
-/* SEARCH */
-.search{
-    display:flex;
-    justify-content:center;
-    gap:10px;
-    margin-bottom:15px;
-}
-
-.search input{
-    padding:10px;
-    border-radius:8px;
-    border:1px solid var(--border);
-    width:220px;
-    outline:none;
-}
-
-.search button{
-    padding:10px 18px;
-    border:none;
-    background:var(--primary);
-    color:white;
-    border-radius:8px;
-    cursor:pointer;
-    font-weight:500;
-}
-
-.search button:hover{
-    background:#ff6500;
-}
-
-/* SECTION TITLE */
-h2{
-    text-align:center;
-    font-size:24px;
-    margin-bottom:15px;
-}
-</style>
-
-
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">  
-    <style>
-    #map{
-        height:450px !important;
-        width:100% !important;
-        background:#eee;
-    }
-    </style>
-    <-- Leaflet 
-    <link rel="stylesheet"href="https://unpkg.com/leaflet/dist/leaflet.css"/>
-
-    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-</head>
-
-<body>
-
-<div class="container">
-    <h1>Pets Available for Adoption 🐾</h1>
-
-    <div class="pet-grid">
-        {% for pet in pets %}
-        <div class="pet-card">
-            <img src="{{ url_for('static', filename='uploads/' + pet.image) }}">
-
-            <div class="pet-info">
-                <h3>{{ pet.name }}</h3>
-                <div class="type">{{ pet.type }}</div>
-
-                <p><strong>Breed:</strong> {{ pet.breed }}</p>
-                <p><strong>Age:</strong> {{ pet.age }} years</p>
-                <p><strong>Location:</strong> {{ pet.location }}</p>
-
-                <div class="btn-group">
-                   <a href="{{ url_for('pet_details', pet_id=pet.id) }}" class="details-btn">View Full Profile →</a>
-
-                </div>
-            </div>
-        </div>
-
-        <-- MODAL 
-        <input type="checkbox" id="modal{{ pet.id }}" hidden>
-        <div class="modal">
-            <div class="modal-content">
-                <label for="modal{{ pet.id }}" class="close">✖</label>
-
-                <h3>{{ pet.name }} – Details</h3>
-                <p>{{ pet.description }}</p>
-
-                <hr>
-
-                <p><strong>Owner:</strong> {{ pet.owner_name }}</p>
-                <p><strong>Phone:</strong> {{ pet.owner_phone }}</p>
-                {% if pet.owner_email %}
-                <p><strong>Email:</strong> {{ pet.owner_email }}</p>
-                {% endif %}
-                <p><strong>Location:</strong> {{ pet.location }}</p>
-            </div>
-  
-        </div>
-        {% endfor %}
-
-     
-    </div>
-</div>
-
-<script>
-    document.querySelectorAll('.details-btn').forEach((btn, index) => {
-        btn.onclick = () => {
-            document.querySelectorAll('.modal')[index].style.display = 'flex';
-        };
-    });
-    document.querySelectorAll('.close').forEach((btn) => {
-        btn.onclick = () => {
-            btn.closest('.modal').style.display = 'none';
-        };
-    });
-</script>
-
-
-<SHELTER MAP SECTION 
-<div style="max-width:1100px;margin:50px auto">
-
-<h2 style="text-align:center;margin-bottom:15px">
-Nearby Animal Shelters
-</h2>
-
-<div class="search" style="text-align:center;margin-bottom:15px">
-  <input type="text" id="searchBox"
-   placeholder="Search city / place"
-   style="padding:10px;border-radius:8px;border:1px solid #ccc">
-  <button onclick="searchLocation()"
-   style="padding:10px 16px;border:none;
-   background:#ff7a00;color:white;border-radius:8px">
-   Search
-  </button>
-</div>
-
-<div id="map"
- style="height:450px;width:100%;
- border-radius:16px;
- box-shadow:0 6px 18px rgba(0,0,0,0.1)">
-</div>
-
-</div>
-
-<script>
-var map=L.map('map').setView([9.9312,76.2673],13);
-
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png')
-.addTo(map);
-
-var markers=[];
-
-function searchLocation(){
-
- let city=document.getElementById("searchBox").value;
-
- fetch("/get-map-data?city="+city)
- .then(res=>res.json())
- .then(data=>{
-
-  // clear old markers
-  markers.forEach(m=>map.removeLayer(m));
-  markers=[];
-
-  if(data.shelters.length==0){
-    alert("No shelters found");
-    return;
-  }
-
-  // center map to first result
-  map.setView(
-   [data.shelters[0].latitude,
-    data.shelters[0].longitude],13);
-
-  data.shelters.forEach(s=>{
-
-    let m=L.marker([s.latitude,s.longitude])
-    .addTo(map)
-    .bindPopup(
-     `<b>${s.name}</b><br>${s.address}`
-    );
-
-    markers.push(m);
-  });
-
- });
-}
-</script>
-
-</body>
-</html>-->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -539,6 +187,35 @@ h1{
   background: #45a049;
 }
 
+/* HEADER WITH RIGHT BUTTON */
+.page-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:50px;
+}
+
+.page-header h1{
+    margin:0;
+    font-size:30px;
+    font-weight:600;
+}
+
+.home-btn{
+    padding:10px 18px;
+    background:var(--primary);
+    color:white;
+    text-decoration:none;
+    border-radius:10px;
+    font-size:14px;
+    font-weight:500;
+    transition:.2s;
+}
+
+.home-btn:hover{
+    background:#ff6500;
+}
+
 
 </style>
 </style>
@@ -551,7 +228,11 @@ h1{
 <body>
 
 <div class="container">
+    <!--h1>Pets Available for Adoption 🐾</h1>-->
+    <div class="page-header">
     <h1>Pets Available for Adoption 🐾</h1>
+    <a href="{{ url_for('home') }}" class="home-btn">Back to Home</a>
+</div>
 
     <div class="pet-grid">
         {% for pet in pets %}
@@ -637,7 +318,9 @@ function searchLocation(){
       <h3>${s.name}</h3>
       <p>${s.address}</p>
       <p><strong>City:</strong> ${s.city}</p>
-      <a href="https://www.google.com/maps/search/?api=1&query=${s.latitude},${s.longitude}" 
+      <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+        s.name + ', ' + s.address + ', ' + s.city
+    )}"
          target="_blank" class="btn">View on Map</a>
     </div>
   `;

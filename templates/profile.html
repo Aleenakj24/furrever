@@ -4,6 +4,34 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='profile.css') }}">
 <style>
 /* FOLLOW MODAL */
+/* FOLLOW BUTTON */
+.follow-btn {
+    padding: 8px 20px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    background: #0095f6;
+    color: white;
+}
+
+/* Hover effect */
+.follow-btn:hover {
+    background: #1877f2;
+    transform: translateY(-2px);
+}
+
+/* When it becomes Unfollow */
+.follow-btn.unfollow {
+    background: #e4e6eb;
+    color: #262626;
+}
+
+.follow-btn.unfollow:hover {
+    background: #d8dadf;
+}
 .follow-modal {
   display: none;
   position: fixed;
@@ -116,10 +144,17 @@
         {% if session['user_id'] == user.id %}
           <a href="/edit-profile" class="edit-btn">Edit Profile</a>
           <button class="share-btn">Share Profile</button>
-        {% endif %}
+        {% else %}
+      <button id="followBtn"
+        onclick="toggleFollow('{{ user.id }}')"
+        class="follow-btn {% if user.is_following %}unfollow{% endif %}">
+    {{ "Unfollow" if user.is_following else "Follow" }}
+</button>
+  {% endif %}
       </div>
     </div>
   </div>
+  
 
   <!-- POSTS GRID -->
   <div class="profile-grid">
@@ -348,6 +383,28 @@ function openFollowModal(type, userId) {
       });
     });
   modal.style.display="flex";
+}
+function toggleFollow(userId) {
+  fetch("/toggle-follow", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ user_id: userId })
+  })
+  .then(res => res.json())
+  .then(data => {
+    const btn = document.getElementById("followBtn");
+
+    if (data.status === "followed") {
+      btn.innerText = "Unfollow";
+      btn.classList.add("unfollow");
+    } else {
+      btn.innerText = "Follow";
+      btn.classList.remove("unfollow");
+    }
+
+    document.querySelector(".stats-row span:nth-child(2) b").innerText =
+      data.followers;
+  });
 }
 
 // CLOSE FOLLOW MODAL
