@@ -1,6 +1,6 @@
 
 home,experience,time,activity_level,grooming,other_pets,output_breed
-
+home,experience,time,activity_level,grooming,other_pets,output_breed
 Apartment,Beginner,Low,Low,Low,No,Cat_Persian
 Apartment,Beginner,Low,Low,Low,Yes - Cat,Cat_Persian
 Apartment,Beginner,Medium,Low,Moderate,No,Cat_Persian
@@ -11,6 +11,58 @@ Apartment,Experienced,Medium,Low,Moderate,Yes - Cat,Cat_Persian
 Apartment,Beginner,Low,Low,Moderate,No,Cat_Persian
 Apartment,Beginner,Medium,Medium,Moderate,No,Cat_Persian
 Apartment,Experienced,Low,Low,Low,No,Cat_Persian
+Apartment,Beginner,Medium,Low,High,No,Cat_Persian
+Apartment,Experienced,Low,Low,High,Yes - Cat,Cat_Persian
+Apartment,Beginner,Medium,Low,High,Yes - Cat,Cat_Persian
+Apartment,Experienced,Medium,Low,High,No,Cat_Persian
+Apartment,Beginner,Low,Low,High,No,Cat_Persian
+Apartment,Experienced,Medium,Low,Moderate,Yes - Cat,Cat_Persian
+Apartment,Beginner,Low,Low,Moderate,Yes - Cat,Cat_Persian
+Apartment,Experienced,Low,Low,Moderate,Yes - Cat,Cat_Persian
+Apartment,Beginner,Medium,Low,Moderate,Yes - Cat,Cat_Persian
+Apartment,Experienced,Low,Low,Moderate,No,Cat_Persian
+
+Apartment,Beginner,Medium,Medium,Moderate,Yes - Cat,Cat_Siamese
+Apartment,Experienced,High,Medium,Moderate,Yes - Cat,Cat_Siamese
+Apartment,Beginner,Medium,Medium,Moderate,No,Cat_Siamese
+Apartment,Experienced,High,Medium,Moderate,No,Cat_Siamese
+Apartment,Experienced,Medium,Medium,Moderate,Yes - Cat,Cat_Siamese
+Apartment,Beginner,High,Medium,Moderate,No,Cat_Siamese
+Apartment,Experienced,Medium,Medium,High,Yes - Cat,Cat_Siamese
+Apartment,Beginner,Medium,Medium,Moderate,Yes - Cat,Cat_Siamese
+Apartment,Experienced,High,Medium,High,Yes - Cat,Cat_Siamese
+Apartment,Beginner,Medium,Medium,High,No,Cat_Siamese
+Apartment,Experienced,High,Medium,Moderate,Yes - Cat,Cat_Siamese
+Apartment,Beginner,Medium,Medium,Moderate,No,Cat_Siamese
+Apartment,Experienced,Medium,Medium,Moderate,No,Cat_Siamese
+Apartment,Beginner,High,Medium,Moderate,Yes - Cat,Cat_Siamese
+Apartment,Experienced,Medium,Medium,High,Yes - Cat,Cat_Siamese
+Apartment,Beginner,Medium,Medium,Moderate,Yes - Cat,Cat_Siamese
+Apartment,Experienced,High,Medium,Moderate,Yes - Cat,Cat_Siamese
+Apartment,Beginner,Medium,Medium,Moderate,No,Cat_Siamese
+Apartment,Experienced,High,Medium,Moderate,No,Cat_Siamese
+Apartment,Beginner,Medium,Medium,Moderate,Yes - Cat,Cat_Siamese
+
+Apartment,Experienced,Medium,Low,Moderate,Yes - Cat,Dog_Pug
+Apartment,Beginner,Medium,Low,Moderate,No,Dog_Pug
+Apartment,Experienced,Low,Low,Moderate,Yes - Dog,Dog_Pug
+Apartment,Beginner,Medium,Low,Moderate,Yes - Cat,Dog_Pug
+Apartment,Experienced,Medium,Low,Moderate,No,Dog_Pug
+Apartment,Beginner,Low,Low,Moderate,No,Dog_Pug
+Apartment,Experienced,Medium,Medium,Moderate,No,Dog_Pug
+Apartment,Experienced,Medium,Medium,Moderate,Yes - Cat,Dog_Pug
+Apartment,Experienced,High,Medium,Moderate,No,Dog_Pug
+Apartment,Experienced,Medium,Medium,High,Yes - Dog,Dog_Pug
+Apartment,Experienced,Medium,Medium,Moderate,Yes - Other,Dog_Pug
+Apartment,Experienced,High,Medium,High,Yes - Cat,Dog_Pug
+Apartment,Experienced,Medium,Medium,Moderate,Yes - Dog,Dog_Pug
+Apartment,Beginner,Low,Low,Moderate,No,Dog_Pug
+Apartment,Experienced,Medium,Low,Moderate,Yes - Cat,Dog_Pug
+Apartment,Beginner,Medium,Low,Moderate,No,Dog_Pug
+Apartment,Experienced,Low,Low,Moderate,Yes - Dog,Dog_Pug
+Apartment,Beginner,Medium,Low,Moderate,Yes - Cat,Dog_Pug
+Apartment,Experienced,Medium,Low,Moderate,No,Dog_Pug
+Apartment,Beginner,Low,Low,Moderate,No,Dog_Pug
 
 Independent House,Beginner,High,High,Moderate,No,Dog_Labrador
 Independent House,Beginner,High,Medium,Moderate,No,Dog_Labrador
@@ -19,28 +71,58 @@ Independent House,Beginner,Medium,High,Moderate,No,Dog_Labrador
 Independent House,Experienced,High,High,High,Yes - Dog,Dog_Labrador
 Independent House,Beginner,High,Medium,High,No,Dog_Labrador
 Independent House,Experienced,High,High,Moderate,Yes - Cat,Dog_Labrador
-Independent House,Beginner,Medium,High,Moderate,No,Dog_Labrador
 Independent House,Experienced,High,High,High,Yes - Other,Dog_Labrador
 Independent House,Beginner,High,High,Moderate,No,Dog_Labrador
+Independent House,Experienced,High,High,Moderate,Yes - Dog,Dog_Labrador
+Independent House,Beginner,Medium,High,Moderate,No,Dog_Labrador
+Independent House,Experienced,High,High,High,Yes - Dog,Dog_Labrador
+Independent House,Beginner,High,Medium,High,No,Dog_Labrador
+Independent House,Experienced,High,High,Moderate,Yes - Cat,Dog_Labrador
+Independent House,Experienced,High,High,High,Yes - Other,Dog_Labrador
+Independent House,Beginner,High,High,Moderate,No,Dog_Labrador
+Independent House,Experienced,High,High,Moderate,Yes - Dog,Dog_Labrador
+Independent House,Beginner,Medium,High,Moderate,No,Dog_Labrador
+Independent House,Experienced,High,High,High,Yes - Dog,Dog_Labrador
+Independent House,Beginner,High,Medium,High,No,Dog_Labrador
+
+Independent House,Experienced,High,High,Moderate,Yes - Dog,Dog_Beagle
+Independent House,Beginner,High,High,Moderate,No,Dog_Beagle
+Independent House,Experienced,High,High,Moderate,Yes - Cat,Dog_Beagle
+Independent House,Experienced,High,High,Moderate,Yes - Other,Dog_Beagle
+Independent House,Beginner,Medium,High,Moderate,No,Dog_Beagle
+Independent House,Experienced,High,High,Moderate,Yes - Dog,Dog_Beagle
+Independent House,Beginner,High,High,Moderate,No,Dog_Beagle
+Independent House,Experienced,High,High,Moderate,Yes - Cat,Dog_Beagle
+Independent House,Experienced,High,High,Moderate,Yes - Other,Dog_Beagle
+Independent House,Beginner,Medium,High,Moderate,No,Dog_Beagle
+Independent House,Experienced,High,High,Moderate,Yes - Dog,Dog_Beagle
+Independent House,Beginner,High,High,Moderate,No,Dog_Beagle
+Independent House,Experienced,High,High,Moderate,Yes - Cat,Dog_Beagle
+Independent House,Experienced,High,High,Moderate,Yes - Other,Dog_Beagle
+Independent House,Beginner,Medium,High,Moderate,No,Dog_Beagle
+Independent House,Experienced,High,High,Moderate,Yes - Dog,Dog_Beagle
+Independent House,Beginner,High,High,Moderate,No,Dog_Beagle
+Independent House,Experienced,High,High,Moderate,Yes - Cat,Dog_Beagle
+Independent House,Experienced,High,High,Moderate,Yes - Other,Dog_Beagle
+Independent House,Beginner,Medium,High,Moderate,No,Dog_Beagle
 
 Farm / Large Property,Experienced,High,High,High,Yes - Dog,Dog_GermanShepherd
 Farm / Large Property,Experienced,High,High,High,Yes - Other,Dog_GermanShepherd
 Farm / Large Property,Experienced,Medium,High,High,Yes - Dog,Dog_GermanShepherd
 Farm / Large Property,Experienced,High,High,High,No,Dog_GermanShepherd
 Farm / Large Property,Experienced,High,High,Moderate,Yes - Dog,Dog_GermanShepherd
-Farm / Large Property,Experienced,Medium,High,High,Yes - Dog,Dog_GermanShepherd
 Farm / Large Property,Experienced,High,High,High,Yes - Cat,Dog_GermanShepherd
-Farm / Large Property,Experienced,High,High,High,Yes - Dog,Dog_GermanShepherd
 Farm / Large Property,Experienced,Medium,High,High,Yes - Other,Dog_GermanShepherd
+Farm / Large Property,Experienced,High,High,High,Yes - Dog,Dog_GermanShepherd
+Farm / Large Property,Experienced,Medium,High,High,Yes - Dog,Dog_GermanShepherd
 Farm / Large Property,Experienced,High,High,High,No,Dog_GermanShepherd
-
-Apartment,Experienced,Medium,Medium,Moderate,No,Dog_Pug
-Apartment,Experienced,Medium,Medium,Moderate,Yes - Cat,Dog_Pug
-Apartment,Experienced,High,Medium,Moderate,No,Dog_Pug
-Apartment,Experienced,Medium,Medium,High,Yes - Dog,Dog_Pug
-Apartment,Experienced,Medium,Medium,Moderate,Yes - Other,Dog_Pug
-Apartment,Experienced,High,Medium,Moderate,No,Dog_Pug
-Apartment,Experienced,Medium,Medium,Moderate,No,Dog_Pug
-Apartment,Experienced,High,Medium,High,Yes - Cat,Dog_Pug
-Apartment,Experienced,Medium,Medium,Moderate,Yes - Dog,Dog_Pug
-Apartment,Experienced,High,Medium,Moderate,No,Dog_Pug
+Farm / Large Property,Experienced,High,High,Moderate,Yes - Dog,Dog_GermanShepherd
+Farm / Large Property,Experienced,High,High,High,Yes - Cat,Dog_GermanShepherd
+Farm / Large Property,Experienced,Medium,High,High,Yes - Other,Dog_GermanShepherd
+Farm / Large Property,Experienced,High,High,High,Yes - Dog,Dog_GermanShepherd
+Farm / Large Property,Experienced,Medium,High,High,Yes - Dog,Dog_GermanShepherd
+Farm / Large Property,Experienced,High,High,High,No,Dog_GermanShepherd
+Farm / Large Property,Experienced,High,High,Moderate,Yes - Dog,Dog_GermanShepherd
+Farm / Large Property,Experienced,High,High,High,Yes - Cat,Dog_GermanShepherd
+Farm / Large Property,Experienced,Medium,High,High,Yes - Other,Dog_GermanShepherd
+Farm / Large Property,Experienced,High,High,High,Yes - Dog,Dog_GermanShepherd
