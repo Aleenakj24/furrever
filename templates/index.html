@@ -213,35 +213,30 @@
     </style>
 </head>
 <body>
-
+    
 <!-- NAVBAR -->
 <div class="navbar">
     <div class="logo">FurrEver 🐾</div>
+
     <div class="nav-links">
         <a href="/">Home</a>
-        <a href="/adopt">Adopt</a>
-        <a href="/add-pet">Add Pet</a>
-        <a href="/paw-gram">Paw-Gram</a>
-       
+
         {% if session.get('user_id') %}
-            <a href="{{ url_for('owner_dashboard') }}">Dashboard</a>
-             <span style="margin-left:20px;color: #444;font-weight: 500;">Hi {{ session.get("name") }}</span>
-            <a href="{{ url_for('logout') }}">Logout</a>
-        {% else %}
-            <a href="{{ url_for('auth') }}">Login</a>
-        {% endif %}
+
         <!-- Services Dropdown -->
         <div class="dropdown">
-    <button class="dropbtn" onclick="toggleDropdown(event)">Services ▾</button>
-    <div class="dropdown-content">
-        <a href="/pet-match">AI Pet Match</a>
-        <a href="/grooming">Pet Grooming</a>
-        <a href="/health-services">Pet Health Services</a>
-        <a href="{{ url_for('report_abuse') }}">Report Abuse</a>
-        <a href="/chatbot">Pet Chatbot</a>
-        <a href="/breed_detector">Upload Image & Find Breed</a>
-    </div>
-</div>
+            <button class="dropbtn" onclick="toggleDropdown(event)">Services ▾</button>
+            <div class="dropdown-content">
+                <a href="/adopt">Adopt</a>
+                <a href="/add-pet">Add Pet</a>
+                <a href="/pet-match">AI Pet Match</a>
+                <a href="/grooming">Pet Grooming</a>
+                <a href="/health-services">Pet Health Services</a>
+                <a href="{{ url_for('report_abuse') }}">Report Abuse</a>
+                <a href="/chatbot">Pet Chatbot</a>
+                <a href="/breed_detector">Upload Image & Find Breed</a>
+            </div>
+        </div>
 
         <!-- Community Dropdown -->
         <div class="dropdown">
@@ -250,11 +245,27 @@
                 <a href="/paw-gram">Paw-Gram</a>
             </div>
         </div>
+
+        <!-- User Dropdown -->
+        <div class="dropdown">
+            <button class="dropbtn" onclick="toggleDropdown(event)">
+                Hi {{ session.get("name") }} ▾
+            </button>
+
+            <div class="dropdown-content">
+                <a href="{{ url_for('owner_dashboard') }}">Dashboard</a>
+                <a href="{{ url_for('logout') }}">Logout</a>
+            </div>
+        </div>
+
+        {% else %}
+            <a href="{{ url_for('auth') }}">Login</a>
+        {% endif %}
+
     </div>
 </div>
-    </div>
-</div>
- 
+
+
 <!-- HERO -->
 <div class="hero">
     <div>
