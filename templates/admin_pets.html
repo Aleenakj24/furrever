@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Pets – FurrEver Admin</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+  <link rel="stylesheet" href="/static/admin.css">
+  <style>
+    .search-bar { background:#fff; border:1px solid #efefef; border-radius:10px; padding:0.45rem 1rem; font-size:0.87rem; outline:none; width:260px; }
+    .search-bar:focus { border-color:#f97316; }
+    .filter-pill { border:1px solid #efefef; background:#fff; border-radius:20px; padding:0.3rem 0.85rem; font-size:0.82rem; cursor:pointer; color:#555; transition:all 0.15s; }
+    .filter-pill:hover,.filter-pill.active { background:#fff7ed; border-color:#f97316; color:#f97316; }
+  </style>
+</head>
+<body>
+
+<div class="sidebar">
+  <div class="sidebar-brand"><span class="accent">Furr</span>Ever 🐾<small>Admin Panel</small></div>
+  <div class="sidebar-section">Overview</div>
+  <a href="/admin"><i class="bi bi-speedometer2"></i> Dashboard</a>
+  <div class="sidebar-section">Manage</div>
+  <a href="/admin/users"><i class="bi bi-people"></i> Users</a>
+  <a href="/admin/pets" class="active"><i class="bi bi-heart"></i> Pets</a>
+  <a href="/admin/adoptions"><i class="bi bi-clipboard-check"></i> Adoptions</a>
+  <a href="/admin/abuse-reports"><i class="bi bi-exclamation-triangle"></i> Abuse Reports</a>
+  <a href="/admin/posts"><i class="bi bi-images"></i> Posts</a>
+  <a href="/admin/shelters"><i class="bi bi-house-heart"></i> Shelters</a>
+  <div class="sidebar-footer">
+    <a href="/"><i class="bi bi-arrow-left"></i> Back to Site</a>
+    <a href="/logout"><i class="bi bi-box-arrow-right"></i> Logout</a>
+  </div>
+</div>
+
+<div class="topbar">
+  <span class="topbar-title">Manage Pets</span>
+  <div class="topbar-user"><div class="avatar">A</div> Admin</div>
+</div>
+
+<div class="main-content">
+  <div class="page-body">
+
+    {% with messages = get_flashed_messages(with_categories=true) %}{% if messages %}
+    <div class="flash-wrap">{% for cat, msg in messages %}
+      <div class="flash flash-{{ 'error' if cat=='error' else cat }}">
+        <i class="bi bi-{{ 'check-circle' if cat=='success' else 'exclamation-circle' }}"></i> {{ msg }}
+      </div>{% endfor %}</div>{% endif %}{% endwith %}
+
+    <div class="d-flex align-items-center justify-content-between mb-3">
+      <div class="page-heading mb-0">Pets <span style="font-size:0.9rem;color:#aaa;font-weight:500">({{ pets|length }})</span></div>
+      <input type="text" id="petSearch" class="search-bar" placeholder="🔍  Search pets…" oninput="filterPets()">
+    </div>
+
+    <!-- Filter pills -->
+    <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:1.2rem">
+      <span class="filter-pill active" onclick="filterByType('all',this)">All</span>
+      <span class="filter-pill" onclick="filterByType('dog',this)">🐶 Dogs</span>
+      <span class="filter-pill" onclick="filterByType('cat',this)">🐱 Cats</span>
+      <span class="filter-pill" onclick="filterByType('bird',this)">🐦 Birds</span>
+      <span class="filter-pill" onclick="filterByType('available',this)">✅ Available</span>
+      <span class="filter-pill" onclick="filterByType('adopted',this)">🏠 Adopted</span>
+    </div>
+
+    <div class="admin-card">
+      <table class="table" id="petsTable">
+        <thead>
+          <tr><th>#</th><th>Pet</th><th>Type</th><th>Breed</th><th>Age</th><th>Location</th><th>Owner</th><th>Status</th><th>Remove</th></tr>
+        </thead>
+        <tbody>
+          {% for pet in pets %}
+          <tr data-type="{{ pet.type|lower }}" data-status="{{ pet.status|lower|default('available') }}">
+            <td style="color:#bbb">{{ pet.id }}</td>
+            <td>
+              <div style="display:flex;align-items:center;gap:0.6rem">
+                {% if pet.image %}
+                  <img src="/static/uploads/{{ pet.image }}" class="thumb">
+                {% else %}
+                  <div style="width:46px;height:46px;background:#fff7ed;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.3rem">🐾</div>
+                {% endif %}
+                <span style="font-weight:600">{{ pet.name }}</span>
+              </div>
+            </td>
+            <td>{{ pet.type }}</td>
+            <td style="color:#888">{{ pet.breed or '—' }}</td>
+            <td style="color:#888">{{ pet.age or '—' }}</td>
+            <td style="color:#888">{{ pet.location or '—' }}</td>
+            <td style="color:#888">{{ pet.owner_name or '—' }}</td>
+            <td><span class="badge-s bs-{{ pet.status|lower|default('available') }}">{{ pet.status|default('Available') }}</span></td>
+            <td>
+              <form method="POST" action="/admin/pets/delete/{{ pet.id }}"
+                    onsubmit="return confirm('Remove {{ pet.name }} from all listings?')">
+                <button class="btn-del"><i class="bi bi-trash3"></i></button>
+              </form>
+            </td>
+          </tr>
+          {% else %}
+          <tr class="empty-row"><td colspan="9">No pets listed yet 🐾</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+let activeType = 'all';
+function filterPets() {
+  const q = document.getElementById('petSearch').value.toLowerCase();
+  document.querySelectorAll('#petsTable tbody tr[data-type]').forEach(row => {
+    const matchText = row.textContent.toLowerCase().includes(q);
+    const matchType = activeType === 'all' || row.dataset.type.includes(activeType) || row.dataset.status === activeType;
+    row.style.display = (matchText && matchType) ? '' : 'none';
+  });
+}
+function filterByType(type, el) {
+  activeType = type;
+  document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+  filterPets();
+}
+</script>
+</body>
+</html>

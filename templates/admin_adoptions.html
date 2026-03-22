@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Adoptions – FurrEver Admin</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+  <link rel="stylesheet" href="/static/admin.css">
+  <style>
+    .search-bar { background:#fff; border:1px solid #efefef; border-radius:10px; padding:0.45rem 1rem; font-size:0.87rem; outline:none; width:260px; }
+    .search-bar:focus { border-color:#f97316; }
+    .filter-pill { border:1px solid #efefef; background:#fff; border-radius:20px; padding:0.3rem 0.85rem; font-size:0.82rem; cursor:pointer; color:#555; transition:all 0.15s; }
+    .filter-pill:hover,.filter-pill.active { background:#fff7ed; border-color:#f97316; color:#f97316; }
+    .msg-preview { max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:#888; }
+  </style>
+</head>
+<body>
+
+<div class="sidebar">
+  <div class="sidebar-brand"><span class="accent">Furr</span>Ever 🐾<small>Admin Panel</small></div>
+  <div class="sidebar-section">Overview</div>
+  <a href="/admin"><i class="bi bi-speedometer2"></i> Dashboard</a>
+  <div class="sidebar-section">Manage</div>
+  <a href="/admin/users"><i class="bi bi-people"></i> Users</a>
+  <a href="/admin/pets"><i class="bi bi-heart"></i> Pets</a>
+  <a href="/admin/adoptions" class="active"><i class="bi bi-clipboard-check"></i> Adoptions</a>
+  <a href="/admin/abuse-reports"><i class="bi bi-exclamation-triangle"></i> Abuse Reports</a>
+  <a href="/admin/posts"><i class="bi bi-images"></i> Posts</a>
+  <a href="/admin/shelters"><i class="bi bi-house-heart"></i> Shelters</a>
+  <div class="sidebar-footer">
+    <a href="/"><i class="bi bi-arrow-left"></i> Back to Site</a>
+    <a href="/logout"><i class="bi bi-box-arrow-right"></i> Logout</a>
+  </div>
+</div>
+
+<div class="topbar">
+  <span class="topbar-title">Adoption Requests</span>
+  <div class="topbar-user"><div class="avatar">A</div> Admin</div>
+</div>
+
+<div class="main-content">
+  <div class="page-body">
+
+    <div class="d-flex align-items-center justify-content-between mb-3">
+      <div class="page-heading mb-0">Adoptions <span style="font-size:0.9rem;color:#aaa;font-weight:500">({{ requests|length }})</span></div>
+      <input type="text" id="adoptSearch" class="search-bar" placeholder="🔍  Search…" oninput="filterTable('adoptSearch','adoptTable')">
+    </div>
+
+    <!-- Status filters -->
+    <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:1.2rem">
+      <span class="filter-pill active" onclick="filterByStatus('all',this)">All</span>
+      <span class="filter-pill" onclick="filterByStatus('pending',this)">⏳ Pending</span>
+      <span class="filter-pill" onclick="filterByStatus('approved',this)">✅ Approved</span>
+      <span class="filter-pill" onclick="filterByStatus('rejected',this)">❌ Rejected</span>
+    </div>
+
+    <div class="admin-card">
+      <table class="table" id="adoptTable">
+        <thead>
+          <tr><th>#</th><th>Pet</th><th>Type</th><th>Requester</th><th>Email</th><th>Message</th><th>Status</th><th>Date</th></tr>
+        </thead>
+        <tbody>
+          {% for r in requests %}
+          <tr data-status="{{ r.status|lower|default('pending') }}">
+            <td style="color:#bbb">{{ r.id }}</td>
+            <td style="font-weight:600">{{ r.pet_name }}</td>
+            <td style="color:#888">{{ r.pet_type }}</td>
+            <td>{{ r.requester_name }}</td>
+            <td style="color:#888;font-size:0.82rem">{{ r.requester_email }}</td>
+            <td>
+              {% if r.message %}
+              <span class="msg-preview" title="{{ r.message }}">{{ r.message }}</span>
+              {% else %}<span style="color:#ccc">—</span>{% endif %}
+            </td>
+            <td><span class="badge-s bs-{{ r.status|lower|default('pending') }}">{{ r.status|default('Pending') }}</span></td>
+            <td style="color:#aaa;font-size:0.82rem">{{ r.created_at.strftime('%d %b %Y') if r.created_at else '—' }}</td>
+          </tr>
+          {% else %}
+          <tr class="empty-row"><td colspan="8">No adoption requests yet 🐾</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+let activeStatus = 'all';
+function filterTable(inputId, tableId) {
+  const q = document.getElementById(inputId).value.toLowerCase();
+  document.querySelectorAll(`#${tableId} tbody tr[data-status]`).forEach(row => {
+    const matchText = row.textContent.toLowerCase().includes(q);
+    const matchStatus = activeStatus === 'all' || row.dataset.status === activeStatus;
+    row.style.display = (matchText && matchStatus) ? '' : 'none';
+  });
+}
+function filterByStatus(status, el) {
+  activeStatus = status;
+  document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+  filterTable('adoptSearch', 'adoptTable');
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Shelters – FurrEver Admin</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+  <link rel="stylesheet" href="/static/admin.css">
+  <style>
+    .search-bar { background:#fff; border:1px solid #efefef; border-radius:10px; padding:0.45rem 1rem; font-size:0.87rem; outline:none; width:260px; }
+    .search-bar:focus { border-color:#f97316; }
+    .add-form { background:#fff; border-radius:14px; border:1px solid #efefef; padding:1.25rem 1.5rem; margin-bottom:1.5rem; }
+    .add-form-title { font-weight:700; font-size:0.95rem; color:#111; margin-bottom:1rem; }
+    .field-input { width:100%; background:#f8f8f8; border:1px solid #efefef; border-radius:9px; padding:0.45rem 0.8rem; font-size:0.85rem; outline:none; transition:border 0.15s; }
+    .field-input:focus { border-color:#f97316; background:#fff; }
+    .field-label { font-size:0.78rem; font-weight:600; color:#888; margin-bottom:4px; text-transform:uppercase; letter-spacing:0.4px; }
+  </style>
+</head>
+<body>
+
+<div class="sidebar">
+  <div class="sidebar-brand"><span class="accent">Furr</span>Ever 🐾<small>Admin Panel</small></div>
+  <div class="sidebar-section">Overview</div>
+  <a href="/admin"><i class="bi bi-speedometer2"></i> Dashboard</a>
+  <div class="sidebar-section">Manage</div>
+  <a href="/admin/users"><i class="bi bi-people"></i> Users</a>
+  <a href="/admin/pets"><i class="bi bi-heart"></i> Pets</a>
+  <a href="/admin/adoptions"><i class="bi bi-clipboard-check"></i> Adoptions</a>
+  <a href="/admin/abuse-reports"><i class="bi bi-exclamation-triangle"></i> Abuse Reports</a>
+  <a href="/admin/posts"><i class="bi bi-images"></i> Posts</a>
+  <a href="/admin/shelters" class="active"><i class="bi bi-house-heart"></i> Shelters</a>
+  <div class="sidebar-footer">
+    <a href="/"><i class="bi bi-arrow-left"></i> Back to Site</a>
+    <a href="/logout"><i class="bi bi-box-arrow-right"></i> Logout</a>
+  </div>
+</div>
+
+<div class="topbar">
+  <span class="topbar-title">Manage Shelters</span>
+  <div class="topbar-user"><div class="avatar">A</div> Admin</div>
+</div>
+
+<div class="main-content">
+  <div class="page-body">
+
+    {% with messages = get_flashed_messages(with_categories=true) %}{% if messages %}
+    <div class="flash-wrap">{% for cat, msg in messages %}
+      <div class="flash flash-{{ 'error' if cat=='error' else cat }}">
+        <i class="bi bi-{{ 'check-circle' if cat=='success' else 'exclamation-circle' }}"></i> {{ msg }}
+      </div>{% endfor %}</div>{% endif %}{% endwith %}
+
+    <div class="page-heading">Shelters</div>
+
+    <!-- Add Shelter Form -->
+    <div class="add-form">
+      <div class="add-form-title">➕ Add New Shelter</div>
+      <form method="POST" action="/admin/shelters/add">
+        <div class="row g-2">
+          <div class="col-md-3">
+            <div class="field-label">Shelter Name *</div>
+            <input type="text" name="name" class="field-input" placeholder="e.g. Paws Haven" required>
+          </div>
+          <div class="col-md-2">
+            <div class="field-label">City *</div>
+            <input type="text" name="city" class="field-input" placeholder="e.g. Kochi" required>
+          </div>
+          <div class="col-md-3">
+            <div class="field-label">Address</div>
+            <input type="text" name="address" class="field-input" placeholder="Street, Area">
+          </div>
+          <div class="col-md-2">
+            <div class="field-label">Phone</div>
+            <input type="text" name="phone" class="field-input" placeholder="+91 …">
+          </div>
+          <div class="col-md-1">
+            <div class="field-label">Latitude</div>
+            <input type="text" name="lat" class="field-input" placeholder="9.9312">
+          </div>
+          <div class="col-md-1">
+            <div class="field-label">Longitude</div>
+            <input type="text" name="lng" class="field-input" placeholder="76.2673">
+          </div>
+        </div>
+        <button type="submit" class="btn-o mt-3">Add Shelter</button>
+      </form>
+    </div>
+
+    <!-- Shelters Table -->
+    <div class="d-flex align-items-center justify-content-between mb-3">
+      <span style="font-weight:700;color:#111">Existing Shelters <span style="font-size:0.9rem;color:#aaa;font-weight:500">({{ shelters|length }})</span></span>
+      <input type="text" id="shelterSearch" class="search-bar" placeholder="🔍  Search shelters…" oninput="filterShelters()">
+    </div>
+
+    <div class="admin-card">
+      <table class="table" id="shelterTable">
+        <thead>
+          <tr><th>#</th><th>Name</th><th>City</th><th>Address</th><th>Phone</th><th>Lat</th><th>Lng</th><th>Remove</th></tr>
+        </thead>
+        <tbody>
+          {% for s in shelters %}
+          <tr>
+            <td style="color:#bbb">{{ s.id }}</td>
+            <td style="font-weight:600">{{ s.name }}</td>
+            <td style="color:#888">{{ s.city }}</td>
+            <td style="color:#888;font-size:0.83rem">{{ s.address or '—' }}</td>
+            <td style="color:#888;font-size:0.83rem">{{ s.phone or '—' }}</td>
+            <td style="color:#bbb;font-size:0.8rem">{{ s.lat or '—' }}</td>
+            <td style="color:#bbb;font-size:0.8rem">{{ s.lng or '—' }}</td>
+            <td>
+              <form method="POST" action="/admin/shelters/delete/{{ s.id }}"
+                    onsubmit="return confirm('Remove {{ s.name }} from shelters?')">
+                <button class="btn-del"><i class="bi bi-trash3"></i></button>
+              </form>
+            </td>
+          </tr>
+          {% else %}
+          <tr class="empty-row"><td colspan="8">No shelters added yet 🐾</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+function filterShelters() {
+  const q = document.getElementById('shelterSearch').value.toLowerCase();
+  document.querySelectorAll('#shelterTable tbody tr').forEach(row => {
+    row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
+  });
+}
+</script>
+</body>
+</html>
