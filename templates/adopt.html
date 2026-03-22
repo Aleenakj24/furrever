@@ -274,6 +274,10 @@ h1{
     
 </div>
 
+    <div class="search">
+    <input type="text" id="petSearch" placeholder="Search by breed or type...">
+    <button onclick="searchPets()">Search</button>
+</div>
     <div class="pet-grid">
         {% for pet in pets %}
         <div class="pet-card">
@@ -372,6 +376,11 @@ function searchLocation(){
   markers.push(m);
 });
  });
+}
+
+function searchPets(){
+    let query = document.getElementById("petSearch").value;
+    window.location.href = "/adopt?search=" + encodeURIComponent(query);
 }
 </script>
 

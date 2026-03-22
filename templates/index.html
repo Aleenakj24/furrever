@@ -247,21 +247,27 @@
         </div>
 
         <!-- User Dropdown -->
-        <div class="dropdown">
-            <button class="dropbtn" onclick="toggleDropdown(event)">
-                Hi {{ session.get("name") }} ▾
-            </button>
+        {% if session.get("name") %}
+            <div class="dropdown">
+                <button class="dropbtn" onclick="toggleDropdown(event)">
+                    Hi {{ session.get("name") }} ▾
+                </button>
 
-            <div class="dropdown-content">
-                <a href="{{ url_for('owner_dashboard') }}">Dashboard</a>
-                <a href="{{ url_for('logout') }}">Logout</a>
+                <div class="dropdown-content">
+                    {% if session.get('role') == 'admin' %}
+                        <a href="/admin">Admin Panel</a>
+                    {% else %}
+                        <a href="{{ url_for('owner_dashboard') }}">Dashboard</a>
+                    {% endif %}
+                    <a href="{{ url_for('logout') }}">Logout</a>
+                </div>
             </div>
-        </div>
 
         {% else %}
             <a href="{{ url_for('auth') }}">Login</a>
         {% endif %}
 
+        {% endif %}
     </div>
 </div>
 

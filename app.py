@@ -11,6 +11,7 @@ import os
 import requests
 from flask import flash
 from dotenv import load_dotenv
+from functools import wraps
 import smtplib
 import numpy as np
 
@@ -171,24 +172,33 @@ def add_pet():
     return render_template('add_pet.html')
 
 # ----------------------- ADOPT PAGE ---------------------------------------
+from flask import request
+
 @app.route('/adopt')
 def adopt():
 
+    search = request.args.get('search')
+
     db = get_db()
     cursor = db.cursor(dictionary=True)
-    cursor.execute("SELECT * FROM pets")
-    pets = cursor.fetchall()
-    cursor.close()
-    return render_template("adopt.html", pets=pets) 
-    pet_type = request.args.get('type')
 
-    if pet_type:
-        cursor.execute("SELECT * FROM pets WHERE type=%s", (pet_type,))
+    # 🔍 If user searched → filter
+    if search and search.strip() != "":
+        search_term = "%" + search.lower().strip() + "%"
+        cursor.execute("""
+            SELECT * FROM pets
+            WHERE LOWER(type) LIKE %s
+               OR LOWER(breed) LIKE %s
+        """, (search_term, search_term))
     else:
+        # 🐾 Default → show all pets
         cursor.execute("SELECT * FROM pets")
 
     pets = cursor.fetchall()
-    return render_template("adopt.html", pets=pets, pet_type=pet_type)
+    cursor.close()
+
+    return render_template("adopt.html", pets=pets, search=search)
+
 
 # -------------------- PET DETAILS PAGE ----------------------------------------
 
@@ -262,6 +272,329 @@ def request_adoption(pet_id):
 
     flash("Adoption request sent successfully! 🐾", "success")
     return redirect(url_for("pet_details", pet_id=pet_id))
+
+
+# ========================  ADMIN SECTION  =============================
+
+
+
+
+def admin_required(f):
+    """Decorator – blocks non-admins from accessing admin routes."""
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        if "user_id" not in session:
+            return redirect(url_for("auth", next=request.path))
+        if session.get("role") != "admin":
+            flash("Access denied: Admins only.", "error")
+            return redirect(url_for("home"))
+        return f(*args, **kwargs)
+    return decorated
+
+# -------------------- ADMIN DASHBOARD ------------------------------------
+
+@app.route("/admin")
+@admin_required
+def admin_dashboard():
+    db = get_db()
+    cursor = db.cursor(dictionary=True)
+
+    cursor.execute("SELECT COUNT(*) AS total FROM users")
+    total_users = cursor.fetchone()["total"]
+
+    cursor.execute("SELECT COUNT(*) AS total FROM pets")
+    total_pets = cursor.fetchone()["total"]
+
+    cursor.execute("SELECT COUNT(*) AS total FROM adoption_requests")
+    total_adoptions = cursor.fetchone()["total"]
+
+    cursor.execute("SELECT COUNT(*) AS total FROM abuse_reports")
+    total_abuse = cursor.fetchone()["total"]
+
+    cursor.execute("SELECT COUNT(*) AS total FROM paw_posts")
+    total_posts = cursor.fetchone()["total"]
+
+    cursor.execute("SELECT COUNT(*) AS total FROM shelters")
+    total_shelters = cursor.fetchone()["total"]
+
+    # Recent abuse reports (last 5)
+    cursor.execute("""
+        SELECT * FROM abuse_reports
+        ORDER BY reported_at DESC LIMIT 5
+    """)
+    recent_abuse = cursor.fetchall()
+
+    # Recent adoption requests (last 5)
+    cursor.execute("""
+        SELECT ar.id, ar.status, ar.created_at,
+               p.name AS pet_name,
+               u.name AS requester_name
+        FROM adoption_requests ar
+        JOIN pets p ON ar.pet_id = p.id
+        JOIN users u ON ar.requester_id = u.id
+        ORDER BY ar.created_at DESC LIMIT 5
+    """)
+    recent_requests = cursor.fetchall()
+
+    cursor.close()
+    db.close()
+
+    return render_template(
+        "admin_dashboard.html",
+        total_users=total_users,
+        total_pets=total_pets,
+        total_adoptions=total_adoptions,
+        total_abuse=total_abuse,
+        total_posts=total_posts,
+        total_shelters=total_shelters,
+        recent_abuse=recent_abuse,
+        recent_requests=recent_requests,
+    )
+
+# -------------------- ADMIN – MANAGE USERS --------------------------------
+
+@app.route("/admin/users")
+@admin_required
+def admin_users():
+    db = get_db()
+    cursor = db.cursor(dictionary=True)
+    cursor.execute("SELECT id, name, email, role, created_at FROM users ORDER BY id DESC")
+    users = cursor.fetchall()
+    cursor.close()
+    db.close()
+    return render_template("admin_users.html", users=users)
+
+
+@app.route("/admin/users/change-role/<int:user_id>", methods=["POST"])
+@admin_required
+def admin_change_role(user_id):
+    new_role = request.form.get("role")
+    if new_role not in ("adopter", "shelter", "admin"):
+        flash("Invalid role.", "error")
+        return redirect(url_for("admin_users"))
+
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute("UPDATE users SET role=%s WHERE id=%s", (new_role, user_id))
+    db.commit()
+    cursor.close()
+    db.close()
+    flash(f"User role updated to '{new_role}'.", "success")
+    return redirect(url_for("admin_users"))
+
+
+@app.route("/admin/users/delete/<int:user_id>", methods=["POST"])
+@admin_required
+def admin_delete_user(user_id):
+    if user_id == session["user_id"]:
+        flash("You cannot delete your own admin account.", "error")
+        return redirect(url_for("admin_users"))
+
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute("DELETE FROM paw_likes WHERE user_id=%s", (user_id,))
+    cursor.execute("DELETE FROM paw_comments WHERE user_id=%s", (user_id,))
+    cursor.execute("DELETE FROM paw_posts WHERE user_id=%s", (user_id,))
+    cursor.execute("DELETE FROM adoption_requests WHERE requester_id=%s", (user_id,))
+    cursor.execute("DELETE FROM paw_followers WHERE follower_id=%s OR following_id=%s", (user_id, user_id))
+    cursor.execute("DELETE FROM stories WHERE user_id=%s", (user_id,))
+    cursor.execute("DELETE FROM pets WHERE owner_id=%s", (user_id,))
+    cursor.execute("DELETE FROM users WHERE id=%s", (user_id,))
+    db.commit()
+    cursor.close()
+    db.close()
+    flash("User deleted successfully.", "success")
+    return redirect(url_for("admin_users"))
+
+# -------------------- ADMIN – MANAGE PETS ---------------------------------
+
+@app.route("/admin/pets")
+@admin_required
+def admin_pets():
+    db = get_db()
+    cursor = db.cursor(dictionary=True)
+    cursor.execute("""
+        SELECT pets.*, users.name AS owner_name
+        FROM pets
+        LEFT JOIN users ON pets.owner_id = users.id
+        ORDER BY pets.id DESC
+    """)
+    pets = cursor.fetchall()
+    cursor.close()
+    db.close()
+    return render_template("admin_pets.html", pets=pets)
+
+
+@app.route("/admin/pets/delete/<int:pet_id>", methods=["POST"])
+@admin_required
+def admin_delete_pet(pet_id):
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute("DELETE FROM adoption_requests WHERE pet_id=%s", (pet_id,))
+    cursor.execute("DELETE FROM pets WHERE id=%s", (pet_id,))
+    db.commit()
+    cursor.close()
+    db.close()
+    flash("Pet listing removed.", "success")
+    return redirect(url_for("admin_pets"))
+
+# -------------------- ADMIN – MANAGE ADOPTION REQUESTS --------------------
+
+@app.route("/admin/adoptions")
+@admin_required
+def admin_adoptions():
+    db = get_db()
+    cursor = db.cursor(dictionary=True)
+    cursor.execute("""
+        SELECT ar.id, ar.status, ar.message, ar.created_at,
+               p.name AS pet_name, p.type AS pet_type,
+               u.name AS requester_name, u.email AS requester_email
+        FROM adoption_requests ar
+        JOIN pets p ON ar.pet_id = p.id
+        JOIN users u ON ar.requester_id = u.id
+        ORDER BY ar.created_at DESC
+    """)
+    requests_list = cursor.fetchall()
+    cursor.close()
+    db.close()
+    return render_template("admin_adoptions.html", requests=requests_list)
+
+# -------------------- ADMIN – MANAGE ABUSE REPORTS -----------------------
+
+@app.route("/admin/abuse-reports")
+@admin_required
+def admin_abuse_reports():
+    db = get_db()
+    cursor = db.cursor(dictionary=True)
+    cursor.execute("SELECT * FROM abuse_reports ORDER BY reported_at DESC")
+    reports = cursor.fetchall()
+    cursor.close()
+    db.close()
+    return render_template("admin_abuse_reports.html", reports=reports)
+
+
+@app.route("/admin/abuse-reports/update-status/<int:report_id>", methods=["POST"])
+@admin_required
+def admin_update_abuse_status(report_id):
+    new_status = request.form.get("status")
+    if new_status not in ("pending", "reviewed", "resolved"):
+        flash("Invalid status.", "error")
+        return redirect(url_for("admin_abuse_reports"))
+
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute(
+        "UPDATE abuse_reports SET status=%s WHERE id=%s",
+        (new_status, report_id)
+    )
+    db.commit()
+    cursor.close()
+    db.close()
+    flash("Abuse report status updated.", "success")
+    return redirect(url_for("admin_abuse_reports"))
+
+
+@app.route("/admin/abuse-reports/delete/<int:report_id>", methods=["POST"])
+@admin_required
+def admin_delete_abuse_report(report_id):
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute("DELETE FROM abuse_reports WHERE id=%s", (report_id,))
+    db.commit()
+    cursor.close()
+    db.close()
+    flash("Abuse report deleted.", "success")
+    return redirect(url_for("admin_abuse_reports"))
+
+# -------------------- ADMIN – MANAGE POSTS --------------------------------
+
+@app.route("/admin/posts")
+@admin_required
+def admin_posts():
+    db = get_db()
+    cursor = db.cursor(dictionary=True)
+    cursor.execute("""
+        SELECT paw_posts.id, paw_posts.caption, paw_posts.image,
+               paw_posts.created_at, users.name AS author
+        FROM paw_posts
+        JOIN users ON paw_posts.user_id = users.id
+        ORDER BY paw_posts.created_at DESC
+    """)
+    posts = cursor.fetchall()
+    cursor.close()
+    db.close()
+    return render_template("admin_posts.html", posts=posts)
+
+
+@app.route("/admin/posts/delete/<int:post_id>", methods=["POST"])
+@admin_required
+def admin_delete_post(post_id):
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute("SELECT image FROM paw_posts WHERE id=%s", (post_id,))
+    post = cursor.fetchone()
+    if post:
+        image_path = os.path.join(app.config["UPLOAD_FOLDER"], post[0])
+        if os.path.exists(image_path):
+            os.remove(image_path)
+    cursor.execute("DELETE FROM paw_likes WHERE post_id=%s", (post_id,))
+    cursor.execute("DELETE FROM paw_comments WHERE post_id=%s", (post_id,))
+    cursor.execute("DELETE FROM paw_posts WHERE id=%s", (post_id,))
+    db.commit()
+    cursor.close()
+    db.close()
+    flash("Post deleted.", "success")
+    return redirect(url_for("admin_posts"))
+
+# -------------------- ADMIN – MANAGE SHELTERS -----------------------------
+
+@app.route("/admin/shelters")
+@admin_required
+def admin_shelters():
+    db = get_db()
+    cursor = db.cursor(dictionary=True)
+    cursor.execute("SELECT * FROM shelters ORDER BY id DESC")
+    shelters = cursor.fetchall()
+    cursor.close()
+    db.close()
+    return render_template("admin_shelters.html", shelters=shelters)
+
+
+@app.route("/admin/shelters/add", methods=["POST"])
+@admin_required
+def admin_add_shelter():
+    name     = request.form.get("name")
+    city     = request.form.get("city")
+    address  = request.form.get("address")
+    phone    = request.form.get("phone")
+    lat      = request.form.get("lat")
+    lng      = request.form.get("lng")
+
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute("""
+        INSERT INTO shelters (name, city, address, phone, lat, lng)
+        VALUES (%s, %s, %s, %s, %s, %s)
+    """, (name, city, address, phone, lat, lng))
+    db.commit()
+    cursor.close()
+    db.close()
+    flash("Shelter added successfully.", "success")
+    return redirect(url_for("admin_shelters"))
+
+
+@app.route("/admin/shelters/delete/<int:shelter_id>", methods=["POST"])
+@admin_required
+def admin_delete_shelter(shelter_id):
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute("DELETE FROM shelters WHERE id=%s", (shelter_id,))
+    db.commit()
+    cursor.close()
+    db.close()
+    flash("Shelter removed.", "success")
+    return redirect(url_for("admin_shelters"))
+
 
 #--------------------------owner dashboard-------------------------------------------
 @app.route('/owner_dashboard')
